@@ -75,4 +75,16 @@ async function onReady() {
 
 }
 
-$(document).ready(utilAsync(onReady));
+// Ensure jQuery is loaded before using it
+if (typeof $ !== 'undefined') {
+    $(document).ready(utilAsync(onReady));
+} else {
+    // Fallback: wait for jQuery to load
+    window.addEventListener('DOMContentLoaded', () => {
+        if (typeof $ !== 'undefined') {
+            $(document).ready(utilAsync(onReady));
+        } else {
+            console.error('jQuery not loaded');
+        }
+    });
+}

@@ -3,11 +3,29 @@ class Sandbox {
     constructor() {
         this.dicts = {};
         this.current = null;
+        
+        // Listen for messages from both postMessage (iframe) and chrome.runtime (Manifest V3)
         window.addEventListener('message', e => this.onBackendMessage(e));
+        
+        // Also listen for messages from Service Worker via chrome.runtime
+        chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+            // Handle ping from Service Worker
+            if (request.action === 'sandboxPing') {
+                sendResponse({ ready: true });
+                return true;
+            }
+            
+            // Handle messages from Service Worker
+            if (request.action === 'sandboxRequest' && request.target === 'sandbox' && request.data) {
+                this.onBackendMessage({ data: request.data });
+                return true; // Keep channel open for async response
+            }
+            return false;
+        });
     }
 
     onBackendMessage(e) {
-        const { action, params } = e.data;
+        const { action, params } = e.data || e;
         const method = this['backend_' + action];
         if (typeof(method) === 'function') {
             method.call(this, params);
@@ -80,6 +98,11 @@ class Sandbox {
 }
 
 window.sandbox = new Sandbox();
+
+// Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
+    // Notify Service Worker that sandbox is ready
+    chrome.runtime.sendMessage({ action: 'sandboxReady' }).catch(() => {});
+    // Initialize backend
     api.initBackend();
 }, false);

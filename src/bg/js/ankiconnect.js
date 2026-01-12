@@ -6,36 +6,48 @@ class Ankiconnect {
     async ankiInvoke(action, params = {}, timeout = 3000) {
         let version = this.version;
         let request = { action, version, params };
-        return new Promise((resolve, reject) => {
-            $.ajax({
-                url: 'http://127.0.0.1:8765',
-                type: 'POST',
-                data: JSON.stringify(request),
-                timeout,
-                contentType: 'application/json; charset=utf-8',
-                dataType: 'json',
-                success: (response) => {
-                    try {
-                        if (Object.getOwnPropertyNames(response).length != 2) {
-                            throw 'response has an unexpected number of fields';
-                        }
-                        if (!response.hasOwnProperty('error')) {
-                            throw 'response is missing required error field';
-                        }
-                        if (!response.hasOwnProperty('result')) {
-                            throw 'response is missing required result field';
-                        }
-                        if (response.error) {
-                            throw response.error;
-                        }
-                        resolve(response.result);
-                    } catch (e) {
-                        reject(e);
-                    }
+        
+        // In Service Worker, use fetch API instead of jQuery
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), timeout);
+            
+            const response = await fetch('http://127.0.0.1:8765', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json; charset=utf-8'
                 },
-                error: (xhr, status, err) => resolve(null),
+                body: JSON.stringify(request),
+                signal: controller.signal
             });
-        });
+            
+            clearTimeout(timeoutId);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const responseData = await response.json();
+            
+            // Validate response structure
+            if (Object.getOwnPropertyNames(responseData).length != 2) {
+                throw 'response has an unexpected number of fields';
+            }
+            if (!responseData.hasOwnProperty('error')) {
+                throw 'response is missing required error field';
+            }
+            if (!responseData.hasOwnProperty('result')) {
+                throw 'response is missing required result field';
+            }
+            if (responseData.error) {
+                throw responseData.error;
+            }
+            
+            return responseData.result;
+        } catch (error) {
+            // Return null on error (same as original behavior)
+            return null;
+        }
     }
 
     async addNote(note) {

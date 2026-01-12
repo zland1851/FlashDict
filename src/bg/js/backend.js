@@ -16,15 +16,31 @@ class ODHBack {
         this.builtin = new Builtin();
         this.builtin.loadData();
 
-        this.agent = new Agent(document.getElementById('sandbox').contentWindow);
+        // In Service Worker, we can't use iframe directly
+        // We'll initialize agent when sandbox is ready via message
+        this.agent = null;
+        this.initSandboxAgent();
 
         chrome.runtime.onMessage.addListener(this.onMessage.bind(this));
-        window.addEventListener('message', e => this.onSandboxMessage(e));
+        // In Service Worker, use self instead of window
+        self.addEventListener('message', e => this.onSandboxMessage(e));
         chrome.runtime.onInstalled.addListener(this.onInstalled.bind(this));
         chrome.tabs.onCreated.addListener((tab) => this.onTabReady(tab.id));
         chrome.tabs.onUpdated.addListener(this.onTabReady.bind(this));
         chrome.commands.onCommand.addListener((command) => this.onCommand(command));
 
+    }
+
+    initSandboxAgent() {
+        // In Service Worker, we need to communicate with sandbox via chrome.runtime
+        // For now, create a dummy agent that will be replaced when sandbox is ready
+        // The sandbox will send a message to initialize the connection
+        this.agent = new Agent(null);
+        this.sandboxReady = false;
+        
+        // In Manifest V3, sandbox page needs to be opened explicitly
+        // The sandbox page will send 'sandboxReady' message when it loads
+        // We'll track when sandbox is ready to avoid sending messages too early
     }
 
     onCommand(command) {
@@ -36,11 +52,11 @@ class ODHBack {
 
     onInstalled(details) {
         if (details.reason === 'install') {
-            chrome.tabs.create({ url: chrome.extension.getURL('bg/guide.html') });
+            chrome.tabs.create({ url: chrome.runtime.getURL('bg/guide.html') });
             return;
         }
         if (details.reason === 'update') {
-            chrome.tabs.create({ url: chrome.extension.getURL('bg/update.html') });
+            chrome.tabs.create({ url: chrome.runtime.getURL('bg/update.html') });
             return;
         }
     }
@@ -53,10 +69,10 @@ class ODHBack {
 
         switch (options.enabled) {
             case false:
-                chrome.browserAction.setBadgeText({ text: 'off' });
+                chrome.action.setBadgeText({ text: 'off' });
                 break;
             case true:
-                chrome.browserAction.setBadgeText({ text: '' });
+                chrome.action.setBadgeText({ text: '' });
                 break;
         }
         this.tabInvokeAll('setFrontendOptions', {
@@ -122,8 +138,62 @@ class ODHBack {
     // Message Hub and Handler start from here ...
     onMessage(request, sender, callback) {
         const { action, params } = request;
+        
+        // Handle messages from offscreen document (background.html)
+        // In the new architecture, sandbox is in an iframe inside offscreen document
+        // Messages from sandbox go through offscreen document to service worker
+        if (action && request.target === 'serviceworker') {
+            const method = this['api_' + action];
+            if (typeof(method) === 'function') {
+                params.callback = callback;
+                method.call(this, params);
+            }
+            return true;
+        }
+        
+        // Handle messages TO offscreen document (background.html)
+        // These are requests that need to go to sandbox
+        if (action && request.target === 'background') {
+            // Forward to offscreen document, which will forward to sandbox
+            // The offscreen document's background.js handles this
+            return true;
+        }
+        
+        // Handle messages from popup/options pages (Manifest V3)
+        if (action && action.startsWith('opt_')) {
+            // Special handling for opt_optionsChanged to avoid recursion
+            if (action === 'opt_optionsChanged') {
+                const options = params && params.options ? params.options : params;
+                this.opt_optionsChanged(options).then(result => {
+                    if (callback) callback(result);
+                }).catch(err => {
+                    if (callback) callback(null);
+                });
+                return true;
+            }
+            
+            const method = this[action];
+            if (typeof(method) === 'function') {
+                method.call(this, params).then(result => {
+                    if (callback) callback(result);
+                }).catch(err => {
+                    if (callback) callback(null);
+                });
+                return true;
+            }
+        }
+        
+        // Handle ankiweb messages
+        if (action === 'ankiweb_initConnection') {
+            this.ankiweb.initConnection(params.options, params.forceLogout).then(() => {
+                if (callback) callback(true);
+            }).catch(() => {
+                if (callback) callback(false);
+            });
+            return true;
+        }
+        
         const method = this['api_' + action];
-
         if (typeof(method) === 'function') {
             params.callback = callback;
             method.call(this, params);
@@ -132,14 +202,16 @@ class ODHBack {
     }
 
     onSandboxMessage(e) {
+        // Handle messages from sandbox
+        // In Service Worker, messages come via chrome.runtime.onMessage
+        // This method is called from the message handler
         const {
             action,
             params
-        } = e.data;
+        } = e.data || e;
         const method = this['api_' + action];
         if (typeof(method) === 'function')
             method.call(this, params);
-
     }
 
     async api_initBackend(params) {
@@ -151,21 +223,38 @@ class ODHBack {
             options.sysscripts = options.dictLibrary;
             options.dictLibrary = '';
         }
-        this.opt_optionsChanged(options);
+        
+        // Wait a bit for sandbox to be ready before loading scripts
+        // In Manifest V3, sandbox page needs time to load
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        await this.opt_optionsChanged(options);
     }
 
     async api_Fetch(params) {
         let { url, callbackId } = params;
 
-        let request = {
-            url,
-            type: 'GET',
-            dataType: 'text',
-            timeout: 3000,
-            error: (xhr, status, error) => this.callback(null, callbackId),
-            success: (data, status) => this.callback(data, callbackId)
-        };
-        $.ajax(request);
+        // In Service Worker, use fetch API instead of jQuery
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 3000);
+            
+            const response = await fetch(url, {
+                method: 'GET',
+                signal: controller.signal
+            });
+            
+            clearTimeout(timeoutId);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.text();
+            this.callback(data, callbackId);
+        } catch (error) {
+            this.callback(null, callbackId);
+        }
     }
 
     async api_Deinflect(params) {
@@ -265,10 +354,23 @@ class ODHBack {
         }
 
         this.options = options;
-        if (loadresults) {
-            let namelist = loadresults.map(x => x.result.objectname);
-            this.options.dictSelected = namelist.includes(options.dictSelected) ? options.dictSelected : namelist[0];
-            this.options.dictNamelist = loadresults.map(x => x.result);
+        if (loadresults && loadresults.length > 0) {
+            // Filter out null results
+            const validResults = loadresults.filter(x => x && x.result);
+            if (validResults.length > 0) {
+                let namelist = validResults.map(x => x.result.objectname);
+                this.options.dictSelected = namelist.includes(options.dictSelected) ? options.dictSelected : namelist[0];
+                this.options.dictNamelist = validResults.map(x => x.result);
+            } else {
+                // No scripts loaded, use default
+                console.warn('No dictionary scripts loaded, using default');
+                this.options.dictNamelist = this.options.dictNamelist || [];
+            }
+        } else {
+            // Keep existing dictNamelist if available
+            if (!this.options.dictNamelist || this.options.dictNamelist.length === 0) {
+                this.options.dictNamelist = [];
+            }
         }
         await this.setScriptsOptions(this.options);
         optionsSave(this.options);
@@ -284,44 +386,156 @@ class ODHBack {
         return this.target ? await this.target.getModelNames() : null;
     }
 
-    async opt_getModelFieldNames(modelName) {
+    async opt_getModelFieldNames(params) {
+        const modelName = params && params.modelName ? params.modelName : params;
         return this.target ? await this.target.getModelFieldNames(modelName) : null;
     }
 
     async opt_getVersion() {
         return this.target ? await this.target.getVersion() : null;
     }
+    
+    // Note: opt_optionsChanged is already defined above, this handles message-based calls
+    async handle_opt_optionsChanged(params) {
+        const options = params && params.options ? params.options : params;
+        return await this.opt_optionsChanged(options);
+    }
 
     // Sandbox communication start here
+    async ensureSandboxOpen() {
+        // In Manifest V3, sandbox page needs to be opened explicitly
+        // Try to open sandbox page if not already open
+        const sandboxUrl = chrome.runtime.getURL('bg/sandbox/sandbox.html');
+        
+        // Try to check if sandbox is already open by pinging it
+        try {
+            await new Promise((resolve) => {
+                chrome.runtime.sendMessage({ action: 'sandboxPing' }, (response) => {
+                    // Check for errors
+                    if (chrome.runtime.lastError) {
+                        // Sandbox not open yet
+                        resolve();
+                        return;
+                    }
+                    if (response && response.ready) {
+                        this.sandboxReady = true;
+                    }
+                    resolve();
+                });
+            });
+            
+            if (this.sandboxReady) {
+                return; // Sandbox is already open
+            }
+        } catch (e) {
+            // Sandbox not open yet
+        }
+        
+        // Try to open sandbox page using chrome.tabs.create
+        // This requires tabs permission, but we'll try anyway
+        // If it fails, we'll just wait for sandboxReady message
+        try {
+            if (chrome.tabs && chrome.tabs.create) {
+                await chrome.tabs.create({
+                    url: sandboxUrl,
+                    active: false // Open in background
+                });
+                // Wait a bit for the page to load
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+        } catch (e) {
+            // If we don't have tabs permission or it fails, that's okay
+            // The sandbox page might be opened manually or through other means
+            console.log('Could not open sandbox page automatically:', e);
+        }
+    }
+
+    async waitForSandboxReady(maxWait = 10000) {
+        if (this.sandboxReady) {
+            return true;
+        }
+        
+        // Try to ensure sandbox is open
+        await this.ensureSandboxOpen();
+        
+        const startTime = Date.now();
+        while (!this.sandboxReady && (Date.now() - startTime) < maxWait) {
+            // Try to ping sandbox to check if it's ready
+            try {
+                await new Promise((resolve) => {
+                    chrome.runtime.sendMessage({ action: 'sandboxPing' }, (response) => {
+                        // Check for errors
+                        if (chrome.runtime.lastError) {
+                            // Sandbox not ready yet, continue waiting
+                            resolve();
+                            return;
+                        }
+                        if (response && response.ready) {
+                            this.sandboxReady = true;
+                        }
+                        resolve();
+                    });
+                });
+            } catch (e) {
+                // Sandbox not ready yet, continue waiting
+            }
+            
+            if (this.sandboxReady) {
+                return true;
+            }
+            
+            // Wait a bit before retrying
+            await new Promise(resolve => setTimeout(resolve, 200));
+        }
+        
+        if (!this.sandboxReady) {
+            console.warn('Sandbox not ready after waiting', maxWait, 'ms');
+        }
+        
+        return this.sandboxReady;
+    }
+
     async loadScripts(list) {
         let promises = list.map((name) => this.loadScript(name));
         let results = await Promise.all(promises);
-        return results.filter(x => { if (x.result) return x.result; });
+        return results.filter(x => { if (x && x.result) return x.result; });
+    }
+
+    async sendtoBackground(request) {
+        request.target = 'background';
+        try {
+            const result = await chrome.runtime.sendMessage(request);
+            return result;
+        } catch (e) {
+            return null;
+        }
     }
 
     async loadScript(name) {
-        return new Promise((resolve, reject) => {
-            this.agent.postMessage('loadScript', { name }, result => resolve(result));
-        });
+        return await this.sendtoBackground({ action: 'loadScript', params: { name } });
     }
 
     async setScriptsOptions(options) {
-        return new Promise((resolve, reject) => {
-            this.agent.postMessage('setScriptsOptions', { options }, result => resolve(result));
-        });
+        return await this.sendtoBackground({ action: 'setScriptsOptions', params: { options } });
     }
 
     async findTerm(expression) {
-        return new Promise((resolve, reject) => {
-            this.agent.postMessage('findTerm', { expression }, result => resolve(result));
-        });
+        return await this.sendtoBackground({ action: 'findTerm', params: { expression } });
     }
 
     callback(data, callbackId) {
+        if (!this.agent) {
+            return;
+        }
         this.agent.postMessage('callback', { data, callbackId });
     }
 
 
 }
 
-window.odhback = new ODHBack();
+// In Service Worker, use self instead of window
+if (typeof self !== 'undefined') {
+    self.odhback = new ODHBack();
+} else if (typeof window !== 'undefined') {
+    window.odhback = new ODHBack();
+}

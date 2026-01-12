@@ -1,153 +1,153 @@
-# ODH 项目技术分析与升级方案
+# ODH Project Technical Analysis & Upgrade Plan
 
-## 项目概述
+## Project Overview
 
-**Online Dictionary Helper (ODH)** 是一个 Chrome/Firefox 浏览器扩展，用于在网页上划词查询在线词典，并支持将查询结果制作成 Anki 卡片。
+**Online Dictionary Helper (ODH)** is a Chrome/Firefox browser extension that displays dictionary definitions for words and phrases selected on web pages, and supports creating Anki flashcards from the results.
 
-- **项目来源**: Fork 自 [ninja33/ODH](https://github.com/ninja33/ODH)
-- **当前版本**: 0.9.5
-- **最后更新**: 约 4 年前
-- **主要语言**: JavaScript (84.4%), HTML (11.3%), CSS (4.3%)
+- **Source**: Forked from [ninja33/ODH](https://github.com/ninja33/ODH)
+- **Current Version**: 0.9.5
+- **Last Updated**: Approximately 4 years ago
+- **Main Languages**: JavaScript (84.4%), HTML (11.3%), CSS (4.3%)
 
-## 核心功能特性
+## Core Features
 
-### 1. 词典查询功能
-- **内置词典**: Collins 英汉词典（离线）
-- **在线词典**: 支持多种在线词典脚本
-  - 英汉: Cambridge, Oxford, Youdao, Baicizhan, Collins 等
-  - 英英: Collins, LDOCE6, UrbanDict 等
-  - 其他语言: 法语、西班牙语、德语、俄语、意大利语等
-- **词典脚本系统**: 支持用户自定义词典脚本（通过 Sandbox 环境运行）
+### 1. Dictionary Query Functionality
+- **Built-in Dictionary**: Collins English-Chinese Dictionary (offline)
+- **Online Dictionaries**: Supports multiple online dictionary scripts
+  - English-Chinese: Cambridge, Oxford, Youdao, Baicizhan, Collins, etc.
+  - English-English: Collins, LDOCE6, UrbanDict, etc.
+  - Other Languages: French, Spanish, German, Russian, Italian, etc.
+- **Dictionary Script System**: Supports user-defined dictionary scripts (executed in Sandbox environment)
 
-### 2. Anki 集成
-- **AnkiConnect**: 通过 AnkiConnect 插件与 Anki 桌面版通信
-- **AnkiWeb**: 支持 AnkiWeb 在线服务
-- **制卡功能**: 自动填充单词、音标、释义、例句等字段
+### 2. Anki Integration
+- **AnkiConnect**: Communicates with Anki desktop via AnkiConnect add-on
+- **AnkiWeb**: Supports AnkiWeb online service
+- **Flashcard Creation**: Automatically fills fields such as word, pronunciation, definition, example sentences, etc.
 
-### 3. 文本选择与弹窗
-- **多种选择方式**: 鼠标拖选、双击、热键触发
-- **上下文提取**: 自动提取选中单词所在句子
-- **弹窗显示**: 在选中文本附近显示词典释义
+### 3. Text Selection & Popup
+- **Multiple Selection Methods**: Mouse drag, double-click, hotkey trigger
+- **Context Extraction**: Automatically extracts sentences containing the selected word
+- **Popup Display**: Shows dictionary definitions near the selected text
 
-### 4. 词形变化处理
-- **Deinflector**: 支持英语单词的词形变化还原（如复数、过去式等）
+### 4. Word Inflection Processing
+- **Deinflector**: Supports English word inflection reduction (e.g., plurals, past tense, etc.)
 
-## 技术架构
+## Technical Architecture
 
-### 1. 文件结构
+### 1. File Structure
 
 ```
 src/
-├── manifest.json          # 扩展清单文件
-├── bg/                    # Background (后台脚本)
-│   ├── background.html    # 后台页面
+├── manifest.json          # Extension manifest file
+├── bg/                    # Background (background scripts)
+│   ├── background.html    # Background page
 │   ├── js/
-│   │   ├── backend.js     # 后台主逻辑
-│   │   ├── agent.js       # Sandbox 通信代理
-│   │   ├── ankiconnect.js # AnkiConnect 接口
-│   │   ├── ankiweb.js     # AnkiWeb 接口
-│   │   ├── builtin.js     # 内置词典
-│   │   ├── deinflector.js # 词形变化处理
-│   │   ├── options.js     # 选项页面逻辑
-│   │   ├── popup.js       # 弹出窗口逻辑
-│   │   └── utils.js       # 工具函数
-│   ├── sandbox/           # 沙箱环境（运行字典脚本）
+│   │   ├── backend.js     # Main background logic
+│   │   ├── agent.js       # Sandbox communication proxy
+│   │   ├── ankiconnect.js # AnkiConnect interface
+│   │   ├── ankiweb.js     # AnkiWeb interface
+│   │   ├── builtin.js     # Built-in dictionary
+│   │   ├── deinflector.js # Word inflection processing
+│   │   ├── options.js     # Options page logic
+│   │   ├── popup.js       # Popup window logic
+│   │   └── utils.js       # Utility functions
+│   ├── sandbox/           # Sandbox environment (runs dictionary scripts)
 │   │   ├── sandbox.html
-│   │   ├── sandbox.js     # 沙箱主逻辑
-│   │   ├── api.js         # 沙箱 API 接口
+│   │   ├── sandbox.js     # Sandbox main logic
+│   │   ├── api.js         # Sandbox API interface
 │   │   └── sign.js
-│   └── css/               # 样式文件
-├── fg/                    # Frontend (内容脚本)
+│   └── css/               # Style files
+├── fg/                    # Frontend (content scripts)
 │   ├── js/
-│   │   ├── frontend.js    # 前端主逻辑
-│   │   ├── popup.js       # 弹窗显示
-│   │   ├── frame.js       # 弹窗框架
-│   │   ├── range.js       # 文本范围处理
-│   │   ├── text.js        # 文本处理
-│   │   ├── spell.js       # 拼写检查
-│   │   └── api.js         # 前端 API
-│   └── css/               # 样式文件
-├── dict/                  # 字典脚本目录
-│   └── *.js               # 各种字典脚本
-└── _locales/              # 国际化文件
+│   │   ├── frontend.js    # Frontend main logic
+│   │   ├── popup.js       # Popup display
+│   │   ├── frame.js       # Popup frame
+│   │   ├── range.js       # Text range processing
+│   │   ├── text.js        # Text processing
+│   │   ├── spell.js       # Spell checking
+│   │   └── api.js         # Frontend API
+│   └── css/               # Style files
+├── dict/                  # Dictionary scripts directory
+│   └── *.js               # Various dictionary scripts
+└── _locales/              # Internationalization files
 ```
 
-### 2. 核心模块
+### 2. Core Modules
 
-#### 2.1 Background Script (后台脚本)
-- **文件**: `bg/js/backend.js`
-- **类**: `ODHBack`
-- **职责**:
-  - 管理扩展状态和选项
-  - 处理消息传递（与 Content Script 通信）
-  - 管理字典脚本加载和执行
-  - 处理 Anki 相关操作
-  - 管理词形变化和内置词典
+#### 2.1 Background Script
+- **File**: `bg/js/backend.js`
+- **Class**: `ODHBack`
+- **Responsibilities**:
+  - Manage extension state and options
+  - Handle message passing (communication with Content Script)
+  - Manage dictionary script loading and execution
+  - Handle Anki-related operations
+  - Manage word inflection and built-in dictionary
 
-#### 2.2 Content Script (内容脚本)
-- **文件**: `fg/js/frontend.js`
-- **类**: `ODHFront`
-- **职责**:
-  - 监听鼠标和键盘事件
-  - 处理文本选择
-  - 显示弹窗
-  - 与 Background Script 通信获取词典结果
+#### 2.2 Content Script
+- **File**: `fg/js/frontend.js`
+- **Class**: `ODHFront`
+- **Responsibilities**:
+  - Listen to mouse and keyboard events
+  - Handle text selection
+  - Display popup
+  - Communicate with Background Script to get dictionary results
 
-#### 2.3 Sandbox (沙箱环境)
-- **文件**: `bg/sandbox/sandbox.js`
-- **类**: `Sandbox`
-- **职责**:
-  - 安全执行用户自定义字典脚本
-  - 提供受限的 API 接口（fetch, deinflect 等）
-  - 通过 postMessage 与 Background Script 通信
+#### 2.3 Sandbox (Sandbox Environment)
+- **File**: `bg/sandbox/sandbox.js`
+- **Class**: `Sandbox`
+- **Responsibilities**:
+  - Securely execute user-defined dictionary scripts
+  - Provide restricted API interfaces (fetch, deinflect, etc.)
+  - Communicate with Background Script via postMessage
 
-#### 2.4 字典脚本接口
-- **标准格式**: 每个字典脚本必须是一个类，包含 `findTerm(word)` 方法
-- **返回**: Promise，解析为词典结果数组
-- **示例**: `encn_Youdao.js`, `encn_Cambridge.js` 等
+#### 2.4 Dictionary Script Interface
+- **Standard Format**: Each dictionary script must be a class with a `findTerm(word)` method
+- **Returns**: Promise that resolves to an array of dictionary results
+- **Examples**: `encn_Youdao.js`, `encn_Cambridge.js`, etc.
 
-#### 2.5 Options Page (选项页面)
-- **文件**: `bg/js/options.js`, `bg/options.html`
-- **主要功能**:
-  - **通用选项管理**: 启用/禁用扩展、鼠标选择、热键配置、上下文和例句数量设置
-  - **Anki 配置**: 
-    - 服务选择（AnkiConnect/AnkiWeb/None）
-    - AnkiWeb 登录（用户名/密码）
-    - 牌组和模板选择
-    - 字段映射（expression, reading, definition, sentence 等）
-    - 标签和重复卡片设置
-  - **词典配置**:
-    - 当前使用的词典选择
-    - 单语/双语词典模式
-    - 音频偏好设置
-  - **脚本管理**:
-    - 系统脚本列表（内置词典脚本）
-    - 用户自定义脚本（UDF Scripts）
-    - 脚本启用/禁用和云端加载选项
-- **关键函数**:
-  - `populateAnkiDeckAndModel()`: 从 Anki 获取牌组和模板列表
-  - `populateAnkiFields()`: 根据模板获取字段列表
-  - `updateAnkiStatus()`: 检查 Anki 连接状态
-  - `populateDictionary()`: 填充可用词典列表
-  - `populateSysScriptsList()`: 管理系统脚本列表
-  - `onSaveClicked()`: 保存所有配置选项
-- **依赖**: jQuery, `odhback()` (后台脚本接口), `optionsLoad()`/`optionsSave()` (存储工具)
+#### 2.5 Options Page
+- **Files**: `bg/js/options.js`, `bg/options.html`
+- **Main Functions**:
+  - **General Options Management**: Enable/disable extension, mouse selection, hotkey configuration, context and example sentence count settings
+  - **Anki Configuration**: 
+    - Service selection (AnkiConnect/AnkiWeb/None)
+    - AnkiWeb login (username/password)
+    - Deck and template selection
+    - Field mapping (expression, reading, definition, sentence, etc.)
+    - Tags and duplicate card settings
+  - **Dictionary Configuration**:
+    - Current dictionary selection
+    - Monolingual/bilingual dictionary mode
+    - Audio preference settings
+  - **Script Management**:
+    - System script list (built-in dictionary scripts)
+    - User-defined scripts (UDF Scripts)
+    - Script enable/disable and cloud loading options
+- **Key Functions**:
+  - `populateAnkiDeckAndModel()`: Get deck and template lists from Anki
+  - `populateAnkiFields()`: Get field list based on template
+  - `updateAnkiStatus()`: Check Anki connection status
+  - `populateDictionary()`: Populate available dictionary list
+  - `populateSysScriptsList()`: Manage system script list
+  - `onSaveClicked()`: Save all configuration options
+- **Dependencies**: jQuery, `odhback()` (background script interface), `optionsLoad()`/`optionsSave()` (storage utilities)
 
-### 3. 通信机制
+### 3. Communication Mechanism
 
 ```
 Content Script <---> Background Script <---> Sandbox
-     (消息)              (消息)              (postMessage)
+     (message)              (message)              (postMessage)
 ```
 
 - **Content Script ↔ Background**: `chrome.runtime.sendMessage()`
-- **Background ↔ Sandbox**: `window.postMessage()` (通过 iframe)
+- **Background ↔ Sandbox**: `window.postMessage()` (via iframe)
 
-## 已过期的技术与 API
+## Deprecated Technologies & APIs
 
 ### 1. Manifest V2 → Manifest V3
 
-**当前状态**: 使用 Manifest V2
+**Current Status**: Using Manifest V2
 ```json
 {
   "manifest_version": 2,
@@ -158,183 +158,183 @@ Content Script <---> Background Script <---> Sandbox
 }
 ```
 
-**问题**:
-- Chrome 计划在 2024 年逐步淘汰 Manifest V2
-- Firefox 也正在迁移到 Manifest V3
+**Issues**:
+- Chrome plans to phase out Manifest V2 in 2024
+- Firefox is also migrating to Manifest V3
 
-**需要迁移**:
+**Migration Required**:
 - `browser_action` → `action`
 - `background.page` → `background.service_worker`
-- `webRequestBlocking` → 声明性 API (`declarativeNetRequest`)
-- `chrome.extension.getURL()` → `chrome.runtime.getURL()` (部分已使用)
+- `webRequestBlocking` → Declarative API (`declarativeNetRequest`)
+- `chrome.extension.getURL()` → `chrome.runtime.getURL()` (partially already in use)
 
-### 2. 已废弃的 Chrome API
+### 2. Deprecated Chrome APIs
 
 #### 2.1 `chrome.extension.getURL()`
-- **位置**: `src/bg/js/backend.js:39, 43`
-- **状态**: 已废弃，应使用 `chrome.runtime.getURL()`
-- **影响**: 低（部分代码已使用新 API）
+- **Location**: `src/bg/js/backend.js:39, 43`
+- **Status**: Deprecated, should use `chrome.runtime.getURL()`
+- **Impact**: Low (some code already uses new API)
 
 #### 2.2 `chrome.browserAction`
-- **位置**: `src/bg/js/backend.js:56, 59`
-- **状态**: Manifest V3 中改为 `chrome.action`
-- **影响**: 高（需要迁移到 Manifest V3）
+- **Location**: `src/bg/js/backend.js:56, 59`
+- **Status**: Changed to `chrome.action` in Manifest V3
+- **Impact**: High (requires migration to Manifest V3)
 
 #### 2.3 `webRequestBlocking`
-- **位置**: `src/manifest.json:38`
-- **状态**: Manifest V3 中需要声明性 API
-- **影响**: 中（需要检查是否实际使用）
+- **Location**: `src/manifest.json:38`
+- **Status**: Requires declarative API in Manifest V3
+- **Impact**: Medium (needs to check if actually used)
 
-### 3. 安全相关问题
+### 3. Security-Related Issues
 
-#### 3.1 Sandbox 中使用 `eval()`
-- **位置**: `src/bg/sandbox/sandbox.js:39`
-- **代码**: `let SCRIPT = eval(\`(${scripttext})\`);`
-- **问题**: 使用 `eval()` 执行远程脚本存在安全风险
-- **建议**: 考虑使用更安全的脚本加载方式（如动态 import，但需要 Manifest V3）
+#### 3.1 Use of `eval()` in Sandbox
+- **Location**: `src/bg/sandbox/sandbox.js:39`
+- **Code**: `let SCRIPT = eval(\`(${scripttext})\`);`
+- **Issue**: Using `eval()` to execute remote scripts poses security risks
+- **Recommendation**: Consider safer script loading methods (e.g., dynamic import, but requires Manifest V3)
 
-#### 3.2 远程脚本加载
-- **位置**: `src/bg/sandbox/sandbox.js:18`
-- **代码**: 从 GitHub 加载脚本
-- **问题**: 需要 HTTPS，且可能受 CORS 限制
+#### 3.2 Remote Script Loading
+- **Location**: `src/bg/sandbox/sandbox.js:18`
+- **Code**: Loading scripts from GitHub
+- **Issue**: Requires HTTPS and may be subject to CORS restrictions
 
-### 4. 依赖库版本
+### 4. Dependency Versions
 
 #### 4.1 jQuery 3.0.0
-- **位置**: `src/bg/background.html:4`
-- **状态**: 较旧版本（当前最新为 3.7.x）
-- **影响**: 低（功能正常，但建议更新）
+- **Location**: `src/bg/background.html:4`
+- **Status**: Older version (current latest is 3.7.x)
+- **Impact**: Low (functions normally, but update recommended)
 
-### 5. 浏览器兼容性
+### 5. Browser Compatibility
 
-#### 5.1 最低 Chrome 版本
-- **当前**: `"minimum_chrome_version": "50.0.0.0"`
-- **状态**: 过旧，现代浏览器已不支持
-- **建议**: 更新到至少 Chrome 88+ (支持 Manifest V3)
+#### 5.1 Minimum Chrome Version
+- **Current**: `"minimum_chrome_version": "50.0.0.0"`
+- **Status**: Too old, modern browsers no longer support it
+- **Recommendation**: Update to at least Chrome 88+ (supports Manifest V3)
 
-## 技术栈分析
+## Technology Stack Analysis
 
-### 1. 前端技术
-- **JavaScript**: ES6+ (使用 class, async/await, Promise)
-- **HTML5**: 标准 HTML
-- **CSS3**: 自定义样式
-- **jQuery**: DOM 操作和事件处理
+### 1. Frontend Technologies
+- **JavaScript**: ES6+ (uses class, async/await, Promise)
+- **HTML5**: Standard HTML
+- **CSS3**: Custom styles
+- **jQuery**: DOM manipulation and event handling
 
-### 2. 浏览器 API
+### 2. Browser APIs
 - **Chrome Extension API**: 
-  - `chrome.runtime` (消息传递)
-  - `chrome.tabs` (标签页管理)
-  - `chrome.storage` (数据存储)
-  - `chrome.i18n` (国际化)
-  - `chrome.commands` (快捷键)
+  - `chrome.runtime` (message passing)
+  - `chrome.tabs` (tab management)
+  - `chrome.storage` (data storage)
+  - `chrome.i18n` (internationalization)
+  - `chrome.commands` (hotkeys)
 - **Web API**:
-  - `DOMParser` (HTML 解析)
-  - `fetch` (通过 Sandbox API 代理)
-  - `postMessage` (跨上下文通信)
+  - `DOMParser` (HTML parsing)
+  - `fetch` (via Sandbox API proxy)
+  - `postMessage` (cross-context communication)
 
-### 3. 外部服务
-- **AnkiConnect**: 本地 HTTP 服务 (默认端口 8765)
-- **AnkiWeb**: 在线服务 API
-- **在线词典**: 各种第三方词典网站
+### 3. External Services
+- **AnkiConnect**: Local HTTP service (default port 8765)
+- **AnkiWeb**: Online service API
+- **Online Dictionaries**: Various third-party dictionary websites
 
-## 升级优先级建议
+## Upgrade Priority Recommendations
 
-### 高优先级（必须修复）
+### High Priority (Must Fix)
 
-1. **迁移到 Manifest V3**
-   - 将 `manifest_version` 升级到 3
-   - 替换 `browser_action` 为 `action`
-   - 将 `background.page` 改为 `service_worker`
-   - 处理 `webRequestBlocking` 权限
+1. **Migrate to Manifest V3**
+   - Upgrade `manifest_version` to 3
+   - Replace `browser_action` with `action`
+   - Change `background.page` to `service_worker`
+   - Handle `webRequestBlocking` permission
 
-2. **替换废弃的 Chrome API**
-   - 将所有 `chrome.extension.getURL()` 替换为 `chrome.runtime.getURL()`
-   - 将 `chrome.browserAction` 替换为 `chrome.action`
+2. **Replace Deprecated Chrome APIs**
+   - Replace all `chrome.extension.getURL()` with `chrome.runtime.getURL()`
+   - Replace `chrome.browserAction` with `chrome.action`
 
-3. **Service Worker 迁移**
-   - Background Script 需要从持久化页面改为 Service Worker
-   - 处理状态持久化（Service Worker 不能保持状态）
-   - 处理事件监听器的注册时机
+3. **Service Worker Migration**
+   - Background Script needs to change from persistent page to Service Worker
+   - Handle state persistence (Service Workers cannot maintain state)
+   - Handle event listener registration timing
 
-### 中优先级（建议修复）
+### Medium Priority (Recommended Fixes)
 
-4. **Sandbox 安全性**
-   - 评估 `eval()` 的使用，考虑更安全的替代方案
-   - 加强远程脚本加载的安全检查
+4. **Sandbox Security**
+   - Evaluate use of `eval()`, consider safer alternatives
+   - Strengthen security checks for remote script loading
 
-5. **依赖更新**
-   - 更新 jQuery 到最新稳定版本
-   - 检查是否有其他依赖需要更新
+5. **Dependency Updates**
+   - Update jQuery to latest stable version
+   - Check for other dependencies that need updating
 
-6. **代码现代化**
-   - 使用 ES6+ 模块系统（如果 Manifest V3 支持）
-   - 优化异步代码结构
+6. **Code Modernization**
+   - Use ES6+ module system (if Manifest V3 supports it)
+   - Optimize async code structure
 
-### 低优先级（可选优化）
+### Low Priority (Optional Optimizations)
 
-7. **性能优化**
-   - 优化字典查询的并发处理
-   - 缓存机制优化
+7. **Performance Optimization**
+   - Optimize concurrent dictionary query processing
+   - Cache mechanism optimization
 
-8. **用户体验**
-   - 改进错误处理提示
-   - 优化弹窗显示效果
+8. **User Experience**
+   - Improve error handling prompts
+   - Optimize popup display effects
 
-## 潜在问题与挑战
+## Potential Issues & Challenges
 
-### 1. Service Worker 限制
-- **问题**: Service Worker 不能保持持久化状态
-- **影响**: Background Script 中的状态管理需要重构
-- **解决方案**: 使用 `chrome.storage` 持久化状态
+### 1. Service Worker Limitations
+- **Issue**: Service Workers cannot maintain persistent state
+- **Impact**: State management in Background Script needs refactoring
+- **Solution**: Use `chrome.storage` for state persistence
 
-### 2. 消息传递变化
-- **问题**: Service Worker 与 Content Script 的通信方式略有不同
-- **影响**: 需要测试所有消息传递路径
-- **解决方案**: 确保所有 `chrome.runtime.sendMessage()` 调用正确处理
+### 2. Message Passing Changes
+- **Issue**: Communication between Service Worker and Content Script is slightly different
+- **Impact**: Need to test all message passing paths
+- **Solution**: Ensure all `chrome.runtime.sendMessage()` calls are handled correctly
 
-### 3. Sandbox 环境
-- **问题**: Manifest V3 中 Sandbox 的使用方式可能变化
-- **影响**: 字典脚本加载机制可能需要调整
-- **解决方案**: 查阅 Manifest V3 文档，确保 Sandbox 配置正确
+### 3. Sandbox Environment
+- **Issue**: Sandbox usage in Manifest V3 may change
+- **Impact**: Dictionary script loading mechanism may need adjustment
+- **Solution**: Consult Manifest V3 documentation, ensure Sandbox configuration is correct
 
-### 4. 权限模型变化
-- **问题**: Manifest V3 的权限模型更严格
-- **影响**: 某些功能可能需要用户明确授权
-- **解决方案**: 更新权限声明，添加必要的权限请求
+### 4. Permission Model Changes
+- **Issue**: Manifest V3 permission model is stricter
+- **Impact**: Some features may require explicit user authorization
+- **Solution**: Update permission declarations, add necessary permission requests
 
-## 测试建议
+## Testing Recommendations
 
-### 1. 功能测试
-- [ ] 文本选择功能
-- [ ] 词典查询功能（内置和在线）
-- [ ] Anki 制卡功能
-- [ ] 选项页面配置
-- [ ] 字典脚本加载
+### 1. Functional Testing
+- [ ] Text selection functionality
+- [ ] Dictionary query functionality (built-in and online)
+- [ ] Anki flashcard creation functionality
+- [ ] Options page configuration
+- [ ] Dictionary script loading
 
-### 2. 兼容性测试
-- [ ] Chrome 最新版本
-- [ ] Firefox 最新版本
-- [ ] Edge 最新版本（如果支持）
+### 2. Compatibility Testing
+- [ ] Latest Chrome version
+- [ ] Latest Firefox version
+- [ ] Latest Edge version (if supported)
 
-### 3. 安全性测试
-- [ ] Sandbox 脚本执行安全性
-- [ ] 远程脚本加载安全性
-- [ ] 权限使用合理性
+### 3. Security Testing
+- [ ] Sandbox script execution security
+- [ ] Remote script loading security
+- [ ] Permission usage reasonableness
 
-## 参考资料
+## References
 
 - [Chrome Extension Manifest V3 Migration Guide](https://developer.chrome.com/docs/extensions/mv3/intro/)
 - [Firefox WebExtensions Manifest V3](https://extensionworkshop.com/documentation/develop/manifest-v3-migration-guide/)
-- [ODH 原项目](https://github.com/ninja33/ODH)
-- [AnkiConnect 文档](https://github.com/FooSoft/anki-connect)
+- [ODH Original Project](https://github.com/ninja33/ODH)
+- [AnkiConnect Documentation](https://github.com/FooSoft/anki-connect)
 
-## 总结
+## Summary
 
-ODH 项目整体架构清晰，功能完整，但使用了已过时的 Manifest V2 和部分废弃的 Chrome API。主要升级工作集中在：
+The ODH project has a clear architecture and complete functionality, but uses outdated Manifest V2 and some deprecated Chrome APIs. The main upgrade work focuses on:
 
-1. **核心迁移**: Manifest V2 → V3
-2. **API 更新**: 废弃 API → 新 API
-3. **架构调整**: Background Page → Service Worker
-4. **安全性增强**: Sandbox 脚本执行机制
+1. **Core Migration**: Manifest V2 → V3
+2. **API Updates**: Deprecated APIs → New APIs
+3. **Architecture Adjustment**: Background Page → Service Worker
+4. **Security Enhancement**: Sandbox script execution mechanism
 
-建议按照优先级逐步进行升级，确保每个阶段都进行充分测试，避免破坏现有功能。
+It is recommended to upgrade step by step according to priority, ensuring thorough testing at each stage to avoid breaking existing functionality.

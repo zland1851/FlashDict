@@ -1,7 +1,10 @@
-/*global Agent */
+/*global SandboxAgent */
 class SandboxAPI {
     constructor() {
-        this.agent = new Agent(window.parent);
+        // In Manifest V3, Service Worker can't use iframe directly
+        // We need to use chrome.runtime for communication
+        // Create agent that uses chrome.runtime instead of postMessage
+        this.agent = new SandboxAgent();
     }
 
     async postMessage(action, params) {
