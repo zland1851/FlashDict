@@ -1,0 +1,40 @@
+{
+  "name": "odh-extension",
+  "version": "1.0.7",
+  "description": "Online Dictionary Helper - Chrome Extension",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:e2e": "jest --testPathPattern=e2e",
+    "test:unit": "jest --testPathPattern=unit"
+  },
+  "keywords": [
+    "chrome-extension",
+    "dictionary",
+    "anki"
+  ],
+  "author": "Zhenyu Huang",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/jest": "^29.5.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "puppeteer": "^24.35.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/tests/**/*.test.js"
+    ],
+    "collectCoverageFrom": [
+      "src/**/*.js",
+      "!src/lib/**",
+      "!src/dict/**"
+    ],
+    "coveragePathIgnorePatterns": [
+      "/node_modules/",
+      "/tests/"
+    ]
+  }
+}

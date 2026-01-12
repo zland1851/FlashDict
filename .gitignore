@@ -1,25 +1,33 @@
-# compiled output
-/dist
-/tmp
-/out-tsc
+# Dependencies
+node_modules/
+package-lock.json
+yarn.lock
 
-# dependencies
-/node_modules
+# Test coverage
+coverage/
+.nyc_output/
 
-# IDE - VSCode
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-*.code-workspace
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 
-# Web store zip
-*.zip
-*.json
-
-# JS Beautify
-.jsbeautifyrc
-
-# for Mac
+# OS
 .DS_Store
+Thumbs.db
+
+# Build
+dist/
+build/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Test results
+test-results/
+screenshots/

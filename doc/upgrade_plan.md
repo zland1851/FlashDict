@@ -20,15 +20,17 @@ This document outlines the step-by-step upgrade plan to migrate ODH from Manifes
 
 **Changes**:
 1. ✅ Replace `chrome.extension.getURL()` → `chrome.runtime.getURL()` (2 occurrences)
-2. ⏳ Replace `chrome.browserAction` → `chrome.action` (will be done in Step 2.1 with manifest migration)
+2. ✅ Replace `chrome.browserAction` → `chrome.action` (completed in Step 2.1)
 
-**Status**: Part 1 completed - `chrome.extension.getURL()` replaced
+**Status**: ✅ **COMPLETED** - All deprecated APIs replaced
 
 **Testing Checklist**:
-- [ ] Extension loads without errors
-- [ ] Guide page opens on first install
-- [ ] Update page opens on extension update
-- [ ] All existing functionality works
+- [x] Extension loads without errors ✅
+- [x] Guide page opens on first install ✅
+- [x] Update page opens on extension update ✅
+- [x] All existing functionality works ✅
+
+**Status**: ✅ **COMPLETED**
 
 **Testing Instructions**:
 1. Load the extension in Chrome (developer mode)
@@ -46,11 +48,13 @@ This document outlines the step-by-step upgrade plan to migrate ODH from Manifes
 - `src/manifest.json`
 
 **Changes**:
-- Update `minimum_chrome_version` from "50.0.0.0" to "88.0.0.0" (first version with full Manifest V3 support)
+- ✅ Update `minimum_chrome_version` from "50.0.0.0" to "88.0.0.0" (first version with full Manifest V3 support)
 
 **Testing Checklist**:
-- [ ] Extension loads in Chrome 88+
-- [ ] No compatibility issues
+- [x] Extension loads in Chrome 88+ ✅
+- [x] No compatibility issues ✅
+
+**Status**: ✅ **COMPLETED**
 
 ---
 
@@ -63,19 +67,21 @@ This document outlines the step-by-step upgrade plan to migrate ODH from Manifes
 - `src/manifest.json`
 
 **Changes**:
-1. Change `manifest_version` from 2 to 3
-2. Replace `browser_action` → `action`
-3. Replace `background.page` → `background.service_worker`
-4. Remove `webRequestBlocking` from permissions (if not used)
-5. Update `web_accessible_resources` format (V3 requires `matches` field)
-6. Replace `chrome.browserAction` → `chrome.action` in backend.js
+1. ✅ Change `manifest_version` from 2 to 3
+2. ✅ Replace `browser_action` → `action`
+3. ✅ Replace `background.page` → `background.service_worker`
+4. ✅ Remove `webRequestBlocking` from permissions (wrapped in try-catch in ankiweb.js)
+5. ✅ Update `web_accessible_resources` format (V3 requires `matches` field)
+6. ✅ Replace `chrome.browserAction` → `chrome.action` in backend.js
 
 **Testing Checklist**:
-- [ ] Extension loads without manifest errors
-- [ ] Extension icon appears in toolbar
-- [ ] Popup opens when clicking extension icon
-- [ ] Badge text updates correctly
-- [ ] No console errors
+- [x] Extension loads without manifest errors ✅
+- [x] Extension icon appears in toolbar ✅
+- [x] Popup opens when clicking extension icon ✅
+- [x] Badge text updates correctly ✅
+- [x] No console errors ✅
+
+**Status**: ✅ **COMPLETED**
 
 ---
 
@@ -88,12 +94,12 @@ This document outlines the step-by-step upgrade plan to migrate ODH from Manifes
 - `src/bg/js/utils.js` (replace `chrome.extension.getBackgroundPage()`)
 
 **Changes**:
-1. Create `src/bg/background.js` as service worker entry point
-2. Import all necessary scripts in service worker
-3. Handle Service Worker lifecycle (no persistent state)
-4. Move state to `chrome.storage` if needed
-5. Ensure event listeners are registered at top level
-6. Replace `chrome.extension.getBackgroundPage()` usage
+1. ✅ Create `src/bg/background.js` as service worker entry point
+2. ✅ Import all necessary scripts in service worker
+3. ✅ Handle Service Worker lifecycle (no persistent state)
+4. ✅ Move state to `chrome.storage` if needed
+5. ✅ Ensure event listeners are registered at top level
+6. ✅ Replace `chrome.extension.getBackgroundPage()` usage (using chrome.runtime.sendMessage)
 
 **Key Considerations**:
 - Service Workers cannot maintain in-memory state
@@ -101,13 +107,20 @@ This document outlines the step-by-step upgrade plan to migrate ODH from Manifes
 - Need to handle Service Worker wake-up events
 - `chrome.extension.getBackgroundPage()` is not available in Service Workers
 
+**Additional Implementation**:
+- ✅ Created offscreen document (`bg/background.html`) for DOM-dependent APIs (Audio, Sandbox iframe)
+- ✅ Implemented message routing between Service Worker, Offscreen Document, and Sandbox
+- ✅ Fixed Audio API by forwarding to offscreen document
+
 **Testing Checklist**:
-- [ ] Service worker starts correctly
-- [ ] Extension state persists across browser restarts
-- [ ] Message passing works between Content Script and Background
-- [ ] AnkiConnect communication works
-- [ ] Dictionary script loading works
-- [ ] All background functionality works
+- [x] Service worker starts correctly ✅
+- [x] Extension state persists across browser restarts ✅
+- [x] Message passing works between Content Script and Background ✅
+- [x] AnkiConnect communication works ✅
+- [x] Dictionary script loading works ✅
+- [x] All background functionality works ✅
+
+**Status**: ✅ **COMPLETED**
 
 ---
 
@@ -119,14 +132,17 @@ This document outlines the step-by-step upgrade plan to migrate ODH from Manifes
 - `src/bg/sandbox/sandbox.js` (if needed)
 
 **Changes**:
-1. Verify sandbox configuration is compatible with V3
-2. Test script loading mechanism
+1. ✅ Verify sandbox configuration is compatible with V3
+2. ✅ Test script loading mechanism
+3. ✅ Updated sandbox communication to use window.postMessage via offscreen document
 
 **Testing Checklist**:
-- [ ] Sandbox iframe loads correctly
-- [ ] Dictionary scripts can be loaded
-- [ ] Script execution works
-- [ ] Communication between Sandbox and Background works
+- [x] Sandbox iframe loads correctly ✅
+- [x] Dictionary scripts can be loaded ✅
+- [x] Script execution works ✅
+- [x] Communication between Sandbox and Background works ✅
+
+**Status**: ✅ **COMPLETED**
 
 ---
 
@@ -139,14 +155,16 @@ This document outlines the step-by-step upgrade plan to migrate ODH from Manifes
 - `src/bg/sandbox/sandbox.js`
 
 **Changes**:
-- Evaluate if dynamic import can replace eval()
-- Add input validation for script loading
-- Improve error handling
+- ✅ Evaluated eval() usage (kept in sandbox as it's isolated and safe)
+- ✅ Add input validation for script loading (name parameter, scripttext validation)
+- ✅ Improve error handling (better error logging, null checks)
 
 **Testing Checklist**:
-- [ ] Script loading still works
-- [ ] Security is improved
-- [ ] No functionality broken
+- [x] Script loading still works ✅
+- [x] Security is improved ✅
+- [x] No functionality broken ✅
+
+**Status**: ✅ **COMPLETED**
 
 ---
 
@@ -159,11 +177,14 @@ This document outlines the step-by-step upgrade plan to migrate ODH from Manifes
 - `src/bg/popup.html`
 
 **Changes**:
-- Update jQuery from 3.0.0 to latest 3.7.x
+- ✅ Update jQuery from 3.0.0 to 3.7.1 (latest stable)
+- ✅ Updated references in popup.html and options.html
 
 **Testing Checklist**:
-- [ ] All jQuery-dependent code works
-- [ ] No breaking changes
+- [x] All jQuery-dependent code works ✅
+- [x] No breaking changes ✅
+
+**Status**: ✅ **COMPLETED**
 
 ---
 
@@ -174,16 +195,24 @@ This document outlines the step-by-step upgrade plan to migrate ODH from Manifes
 **Risk**: Low
 
 **Testing Checklist**:
-- [ ] Text selection works (mouse drag, double-click, hotkey)
-- [ ] Dictionary query works (built-in and online)
-- [ ] Popup displays correctly
-- [ ] Anki integration works (AnkiConnect and AnkiWeb)
-- [ ] Options page works
-- [ ] Dictionary script loading works
-- [ ] All UI elements work
-- [ ] No console errors
-- [ ] Extension works in Chrome latest
-- [ ] Extension works in Firefox (if applicable)
+- [x] Text selection works (mouse drag, double-click, hotkey) ✅
+- [x] Dictionary query works (built-in and online) ✅
+- [x] Popup displays correctly ✅
+- [x] Anki integration works (AnkiConnect and AnkiWeb) ✅
+- [x] Options page works ✅
+- [x] Dictionary script loading works ✅
+- [x] All UI elements work ✅
+- [x] No console errors ✅
+- [x] Extension works in Chrome latest ✅
+- [ ] Extension works in Firefox (if applicable) - Not tested
+
+**Additional Work**:
+- ✅ Created automated testing framework (Jest + Puppeteer)
+- ✅ Created unit tests for utility functions
+- ✅ Created E2E test structure for extension features
+- ✅ Updated Puppeteer to latest version (24.35.0)
+
+**Status**: ✅ **COMPLETED** (Manual testing done, automated tests framework created)
 
 ---
 
@@ -194,7 +223,9 @@ This document outlines the step-by-step upgrade plan to migrate ODH from Manifes
 - `src/manifest.json`
 
 **Changes**:
-- Update version from 0.9.5 to 1.0.0 (or appropriate version)
+- ✅ Update version from 0.9.5 to 1.0.7 (current version)
+
+**Status**: ✅ **COMPLETED**
 
 ---
 
@@ -246,13 +277,29 @@ If any step fails:
 
 ## Current Status
 
-- [x] Step 1.1 (Part 1): Replace `chrome.extension.getURL()` ✅
-- [ ] Step 1.1 (Part 2): Replace `chrome.browserAction` (will be done in Step 2.1)
-- [ ] Step 1.2: Update Minimum Chrome Version
-- [ ] Step 2.1: Update Manifest.json Structure
-- [ ] Step 2.2: Convert Background Page to Service Worker
-- [ ] Step 2.3: Update Sandbox Configuration
-- [ ] Step 3.1: Improve Sandbox Security
-- [ ] Step 3.2: Update Dependencies
-- [ ] Step 4.1: Comprehensive Testing
-- [ ] Step 4.2: Update Version Number
+### ✅ Phase 1: Preparation & Low-Risk Changes - COMPLETED
+- [x] Step 1.1: Replace Deprecated APIs ✅
+  - [x] Part 1: Replace `chrome.extension.getURL()` ✅
+  - [x] Part 2: Replace `chrome.browserAction` → `chrome.action` ✅
+- [x] Step 1.2: Update Minimum Chrome Version ✅
+
+### ✅ Phase 2: Manifest V3 Core Migration - COMPLETED
+- [x] Step 2.1: Update Manifest.json Structure ✅
+- [x] Step 2.2: Convert Background Page to Service Worker ✅
+- [x] Step 2.3: Update Sandbox Configuration ✅
+
+### ✅ Phase 3: Code Modernization & Security - COMPLETED
+- [x] Step 3.1: Improve Sandbox Security ✅
+- [x] Step 3.2: Update Dependencies (jQuery 3.7.1) ✅
+
+### ✅ Phase 4: Final Testing & Cleanup - COMPLETED
+- [x] Step 4.1: Comprehensive Testing ✅
+  - Manual testing completed
+  - Automated testing framework created
+- [x] Step 4.2: Update Version Number ✅ (v1.0.7)
+
+## Summary
+
+**All planned upgrade steps have been completed!** 🎉
+
+The extension has been successfully migrated from Manifest V2 to Manifest V3, with all deprecated APIs replaced, Service Worker architecture implemented, security improvements added, and comprehensive testing completed. The extension is now ready for use with modern Chrome browsers.
