@@ -110,25 +110,57 @@ class ODHBack {
             tags: []
         };
 
+        // First pass: collect all field mappings to handle multiple fields mapping to same Anki field
+        let fieldMappings = {};
         let fieldnames = ['expression', 'reading', 'extrainfo', 'definition', 'definitions', 'sentence', 'url'];
         for (const fieldname of fieldnames) {
             if (!options[fieldname]) continue;
-            note.fields[options[fieldname]] = notedef[fieldname];
+            const ankiField = options[fieldname];
+            if (!fieldMappings[ankiField]) {
+                fieldMappings[ankiField] = [];
+            }
+            // Only add non-empty values
+            if (notedef[fieldname]) {
+                fieldMappings[ankiField].push(notedef[fieldname]);
+            }
+        }
+
+        // Merge multiple fields that map to the same Anki field
+        // This handles cases where multiple source fields (e.g., Definition, Sentence) 
+        // are mapped to the same Anki field (e.g., Back)
+        // Also handles Front field with Expression, Reading, and Audio
+        for (const [ankiField, values] of Object.entries(fieldMappings)) {
+            if (values.length > 0) {
+                // Join multiple values with HTML line breaks for better formatting
+                // Anki fields typically support HTML, so <br> is the standard way to create line breaks
+                // This ensures proper display in Anki cards
+                note.fields[ankiField] = values.join('<br>');
+            }
         }
 
         let tags = options.tags.trim();
         if (tags.length > 0) 
             note.tags = tags.split(' ');
 
+        // Handle audio field - AnkiConnect will add audio to the specified field(s)
+        // The audio will be added as a sound tag, preserving any existing content in the field
         if (options.audio && notedef.audios.length > 0) {
-            note.fields[options.audio] = '';
             let audionumber = Number(options.preferredaudio);
             audionumber = (audionumber && notedef.audios[audionumber]) ? audionumber : 0;
             let audiofile = notedef.audios[audionumber];
+            
+            const audioField = options.audio;
+            // Ensure the audio field exists (it may already have content from other mappings)
+            if (!note.fields[audioField]) {
+                note.fields[audioField] = '';
+            }
+            
+            // AnkiConnect will add the audio file and insert [sound:filename.mp3] tag
+            // into the specified field(s), preserving existing content
             note.audio = {
                 'url': audiofile,
                 'filename': `ODH_${options.dictSelected}_${encodeURIComponent(notedef.expression)}_${audionumber}.mp3`,
-                'fields': [options.audio]
+                'fields': [audioField]
             };
         }
 
