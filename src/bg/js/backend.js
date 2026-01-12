@@ -21,7 +21,7 @@ class ODHBack {
         this.agent = null;
         this.initSandboxAgent();
 
-        chrome.runtime.onMessage.addListener(this.onMessage.bind(this));
+        // Don't register message listener here - it will be registered in background.js
         // In Service Worker, use self instead of window
         self.addEventListener('message', e => this.onSandboxMessage(e));
         chrome.runtime.onInstalled.addListener(this.onInstalled.bind(this));
@@ -145,7 +145,28 @@ class ODHBack {
         if (action && request.target === 'serviceworker') {
             const method = this['api_' + action];
             if (typeof(method) === 'function') {
-                params.callback = callback;
+                // Handle callback-based API (like Fetch, Deinflect, etc.)
+                // These need callbackId to be converted to callback function
+                if (params && params.callbackId) {
+                    // Convert callbackId to callback function
+                    const callbackId = params.callbackId;
+                    params.callback = (result) => {
+                        // Send callback back to sandbox via offscreen document
+                        chrome.runtime.sendMessage({
+                            action: 'sandboxCallback',
+                            params: { callbackId, data: result },
+                            target: 'background'
+                        }, (response) => {
+                            if (chrome.runtime.lastError) {
+                                // Ignore errors
+                            }
+                        });
+                    };
+                    delete params.callbackId;
+                } else if (callback) {
+                    // Use the provided callback from message handler
+                    params.callback = callback;
+                }
                 method.call(this, params);
             }
             return true;
@@ -153,10 +174,11 @@ class ODHBack {
         
         // Handle messages TO offscreen document (background.html)
         // These are requests that need to go to sandbox
+        // Don't intercept these messages - let them pass through to offscreen document
+        // The offscreen document's background.js will handle them
         if (action && request.target === 'background') {
-            // Forward to offscreen document, which will forward to sandbox
-            // The offscreen document's background.js handles this
-            return true;
+            // Return false to let the message pass through to other listeners (offscreen document)
+            return false;
         }
         
         // Handle messages from popup/options pages (Manifest V3)
@@ -181,6 +203,7 @@ class ODHBack {
                 });
                 return true;
             }
+            // If opt_ method not found, fall through to api_ method
         }
         
         // Handle ankiweb messages
@@ -193,12 +216,16 @@ class ODHBack {
             return true;
         }
         
+        // Handle frontend messages (addNote, getTranslation, etc.)
         const method = this['api_' + action];
         if (typeof(method) === 'function') {
             params.callback = callback;
             method.call(this, params);
+            return true; // Return true to indicate message was handled
         }
-        return true;
+        
+        // Message not handled
+        return false;
     }
 
     onSandboxMessage(e) {
@@ -232,12 +259,12 @@ class ODHBack {
     }
 
     async api_Fetch(params) {
-        let { url, callbackId } = params;
+        let { url, callback } = params;
 
         // In Service Worker, use fetch API instead of jQuery
         try {
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 3000);
+            const timeoutId = setTimeout(() => controller.abort(), 10000); // Increase timeout for script loading
             
             const response = await fetch(url, {
                 method: 'GET',
@@ -251,25 +278,36 @@ class ODHBack {
             }
             
             const data = await response.text();
-            this.callback(data, callbackId);
+            if (callback) {
+                callback(data);
+            }
         } catch (error) {
-            this.callback(null, callbackId);
+            console.error('Fetch error:', error, 'for URL:', url);
+            if (callback) {
+                callback(null);
+            }
         }
     }
 
     async api_Deinflect(params) {
-        let { word, callbackId } = params;
-        this.callback(this.deinflector.deinflect(word), callbackId);
+        let { word, callback } = params;
+        if (callback) {
+            callback(this.deinflector.deinflect(word));
+        }
     }
 
     async api_getBuiltin(params) {
-        let { dict, word, callbackId } = params;
-        this.callback(this.builtin.findTerm(dict, word), callbackId);
+        let { dict, word, callback } = params;
+        if (callback) {
+            callback(this.builtin.findTerm(dict, word));
+        }
     }
 
     async api_getLocale(params) {
-        let { callbackId } = params;
-        this.callback(chrome.i18n.getUILanguage(), callbackId);
+        let { callback } = params;
+        if (callback) {
+            callback(chrome.i18n.getUILanguage());
+        }
     }
 
     // front end message handler
@@ -311,19 +349,18 @@ class ODHBack {
     async api_playAudio(params) {
         let { url, callback } = params;
         
-        for (let key in this.audios) {
-            this.audios[key].pause();
-        }
-
+        // In Service Worker, Audio API is not available
+        // Forward the request to offscreen document (background.html) to play audio
         try {
-            const audio = this.audios[url] || new Audio(url);
-            audio.currentTime = 0;
-            audio.play();
-            this.audios[url] = audio;
-            callback(true);
+            const result = await this.sendtoBackground({ action: 'playAudio', params: { url } });
+            if (callback) {
+                callback(result);
+            }
         } catch (err) {
-            console.error(err);
-            callback(null);
+            console.error('Error playing audio:', err);
+            if (callback) {
+                callback(null);
+            }
         }
     }
 
@@ -367,9 +404,13 @@ class ODHBack {
                 this.options.dictNamelist = this.options.dictNamelist || [];
             }
         } else {
-            // Keep existing dictNamelist if available
-            if (!this.options.dictNamelist || this.options.dictNamelist.length === 0) {
+            // Keep existing dictNamelist if available (scripts list hasn't changed)
+            // This is normal and expected behavior - no need to reload scripts
+            if (!this.options || !this.options.dictNamelist || this.options.dictNamelist.length === 0) {
                 this.options.dictNamelist = [];
+            } else {
+                // Preserve existing dictNamelist
+                this.options.dictNamelist = this.options.dictNamelist;
             }
         }
         await this.setScriptsOptions(this.options);
@@ -498,21 +539,32 @@ class ODHBack {
     async loadScripts(list) {
         let promises = list.map((name) => this.loadScript(name));
         let results = await Promise.all(promises);
-        return results.filter(x => { if (x && x.result) return x.result; });
+        const filtered = results.filter(x => { if (x && x.result) return x.result; });
+        return filtered;
     }
 
     async sendtoBackground(request) {
         request.target = 'background';
-        try {
-            const result = await chrome.runtime.sendMessage(request);
-            return result;
-        } catch (e) {
-            return null;
-        }
+        return new Promise((resolve, reject) => {
+            chrome.runtime.sendMessage(request, (response) => {
+                if (chrome.runtime.lastError) {
+                    resolve(null);
+                } else {
+                    resolve(response);
+                }
+            });
+        });
     }
 
     async loadScript(name) {
-        return await this.sendtoBackground({ action: 'loadScript', params: { name } });
+        const result = await this.sendtoBackground({ action: 'loadScript', params: { name } });
+        if (!result || !result.result) {
+            // Only log warning for non-builtin scripts
+            if (name !== 'builtin_encn_Collins') {
+                console.warn('Failed to load script:', name);
+            }
+        }
+        return result || { name, result: null };
     }
 
     async setScriptsOptions(options) {

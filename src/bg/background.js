@@ -12,30 +12,36 @@ importScripts(
 
 // Setup offscreen document (contains sandbox iframe)
 // This is the key to maintaining sandbox page in Manifest V3
-setupOffscreenDocument('/bg/background.html');
-
-// Initialize backend when Service Worker starts
-// In Manifest V3, Service Worker starts when extension is installed or reloaded
-// The backend.js file should create odhback instance at the end
-// Wait a bit for it to be ready
-setTimeout(() => {
-    if (typeof self !== 'undefined' && self.odhback) {
-        // Set up message listener
-        chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-            return self.odhback.onMessage(request, sender, sendResponse);
-        });
-        
-        // Set up command listener
-        chrome.commands.onCommand.addListener((command) => {
-            self.odhback.onCommand(command);
-        });
-        
-        // Initialize backend (this will trigger sandbox loading)
-        self.odhback.api_initBackend({}).catch(err => {
-            console.error('Error initializing backend:', err);
-        });
-    }
-}, 100);
+// Wait for offscreen document to be ready before initializing
+setupOffscreenDocument('/bg/background.html').then(() => {
+    // Initialize backend when Service Worker starts
+    // In Manifest V3, Service Worker starts when extension is installed or reloaded
+    // The backend.js file should create odhback instance at the end
+    // Wait a bit for it to be ready
+    setTimeout(() => {
+        if (typeof self !== 'undefined' && self.odhback) {
+            // Set up message listener
+            chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+                return self.odhback.onMessage(request, sender, sendResponse);
+            });
+            
+            // Set up command listener
+            chrome.commands.onCommand.addListener((command) => {
+                self.odhback.onCommand(command);
+            });
+            
+            // Wait a bit more for offscreen document to fully initialize
+            setTimeout(() => {
+                // Initialize backend (this will trigger sandbox loading)
+                self.odhback.api_initBackend({}).catch(err => {
+                    console.error('Error initializing backend:', err);
+                });
+            }, 500);
+        }
+    }, 100);
+}).catch(err => {
+    console.error('Error setting up offscreen document:', err);
+});
 
 // Keep Service Worker alive
 // according to woxxom's reply on below stackoverflow discussion
