@@ -12,14 +12,14 @@ export type ServiceScope = 'singleton' | 'transient';
 /**
  * Service factory function type
  */
-export type ServiceFactory<T> = (container: Container) => T;
+export type ServiceFactoryFn<T> = (container: Container) => T;
 
 /**
  * Service registration options
  */
 export interface ServiceRegistration<T> {
   /** Factory function to create the service */
-  factory: ServiceFactory<T>;
+  factory: ServiceFactoryFn<T>;
   /** Lifecycle scope */
   scope: ServiceScope;
   /** Cached singleton instance */
@@ -90,7 +90,7 @@ export class Container {
    */
   register<T>(
     name: string,
-    factory: ServiceFactory<T>,
+    factory: ServiceFactoryFn<T>,
     scope: ServiceScope = 'singleton'
   ): this {
     if (this.services.has(name) && !this.options.allowOverwrite) {
@@ -98,7 +98,7 @@ export class Container {
     }
 
     this.services.set(name, {
-      factory: factory as ServiceFactory<unknown>,
+      factory: factory as ServiceFactoryFn<unknown>,
       scope,
       instance: undefined
     });
@@ -112,7 +112,7 @@ export class Container {
    * @param name - Unique service name
    * @param factory - Factory function to create the service
    */
-  registerSingleton<T>(name: string, factory: ServiceFactory<T>): this {
+  registerSingleton<T>(name: string, factory: ServiceFactoryFn<T>): this {
     return this.register(name, factory, 'singleton');
   }
 
@@ -121,7 +121,7 @@ export class Container {
    * @param name - Unique service name
    * @param factory - Factory function to create the service
    */
-  registerTransient<T>(name: string, factory: ServiceFactory<T>): this {
+  registerTransient<T>(name: string, factory: ServiceFactoryFn<T>): this {
     return this.register(name, factory, 'transient');
   }
 
