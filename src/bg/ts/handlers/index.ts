@@ -5,3 +5,4 @@
 
 export * from './OptionsHandler';
 export * from './DictionaryHandler';
+export * from './AudioHandler';
