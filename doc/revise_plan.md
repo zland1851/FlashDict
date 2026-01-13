@@ -70,26 +70,33 @@ This document outlines the revision plan to migrate ODH from JavaScript to TypeS
 
 ## Phase 2: Background Services Migration
 
-### Step 2.1: Migrate AnkiConnect to TypeScript
-**Goal**: Replace `src/bg/js/ankiconnect.js` with TypeScript version
+### Step 2.1: Integrate TypeScript Services with Legacy Backend
+**Goal**: Wire TypeScript services to work alongside legacy JavaScript
 **Risk**: Medium
-**Files to modify**:
-- Delete `src/bg/js/ankiconnect.js`
-- Update `src/bg/background.js` import
-- Create `src/bg/ts/services/AnkiWebService.ts`
+**Files created/modified**:
+- `src/bg/ts/bridge.ts` (TypeScript bridge module)
+- `src/bg/background.js` (updated to load TS services)
+- `src/manifest.json` (min Chrome 91 for dynamic import support)
 
 **Changes**:
 1. ✅ AnkiConnectService.ts already created
-2. Create AnkiWebService.ts implementing IAnkiService
-3. Integrate with existing backend.js
-4. Update message handlers
+2. ✅ AnkiWebService.ts already created
+3. ✅ Created bridge.ts to expose TS services to legacy code
+4. ✅ Updated background.js to use dynamic import() for TS modules
+5. ✅ TypeScript services now initialize alongside legacy backend
+6. ⏭️ NEXT: Gradually replace legacy services with TS implementations
+
+**Integration Approach**:
+- Hybrid system: Both legacy JS and new TS services run together
+- Legacy backend can access TS services via `self.odhback.tsServices`
+- Dynamic import() loads ES6 modules without breaking importScripts()
+- Incremental migration: Replace one service at a time
 
 **Testing Checklist**:
-- [ ] AnkiConnect communication works
-- [ ] AnkiWeb integration works
-- [ ] Deck/model loading works
-- [ ] Note adding works
-- [ ] Error handling works
+- [ ] Extension loads without errors
+- [ ] TypeScript services initialize (check console)
+- [ ] Legacy backend still functions
+- [ ] Services accessible via tsServices property
 
 ---
 
@@ -490,12 +497,12 @@ src/
 - [x] Step 1.1: Commit Initial TypeScript Infrastructure
 - [x] Step 1.2: Build System Enhancement
 
-### Phase 2: Background Services Migration - PENDING
-- [ ] Step 2.1: Migrate AnkiConnect to TypeScript
-- [ ] Step 2.2: Migrate Options Management
-- [ ] Step 2.3: Migrate Dictionary Services
-- [ ] Step 2.4: Migrate Audio Services
-- [ ] Step 2.5: Create Service Bootstrap
+### Phase 2: Background Services Migration - IN PROGRESS 🔄
+- [x] Step 2.1: Integrate TypeScript Services with Legacy Backend
+- [ ] Step 2.2: Replace Legacy Options with OptionsManager
+- [ ] Step 2.3: Replace Legacy Anki Services with TypeScript
+- [ ] Step 2.4: Migrate Dictionary Services
+- [ ] Step 2.5: Migrate Audio Services
 
 ### Phase 3: Content Script Migration - PENDING
 - [ ] Step 3.1: Migrate Frontend API
