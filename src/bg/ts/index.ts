@@ -24,5 +24,8 @@ export * from './handlers';
 export * from './utils/deinflector';
 export * from './utils/builtin';
 
+// Export security
+export * from './security';
+
 // Export bootstrap
 export * from './bootstrap';
