@@ -4,3 +4,4 @@
  */
 
 export * from './OptionsHandler';
+export * from './DictionaryHandler';
