@@ -1,0 +1,412 @@
+/**
+ * Service Worker Entry Point
+ * Pure TypeScript implementation for Chrome extension Manifest V3
+ *
+ * Architecture:
+ * - Uses Bootstrap system for dependency injection
+ * - Uses BackendService for service coordination
+ * - Uses MessageRouter for message handling
+ * - All legacy JavaScript code removed
+ */
+
+import {
+  bootstrap,
+  EVENTS,
+  MESSAGE_ACTIONS,
+  type BootstrapContext
+} from './bootstrap';
+import {
+  createBackendService,
+  BackendService
+} from './services/BackendService';
+import { createHandler } from './core/MessageRouter';
+import type { MessageSender } from './interfaces/IMessageHandler';
+import type { ExtensionOptions } from './interfaces/IOptionsStore';
+import type { NoteDefinition } from './services/NoteFormatterService';
+
+/**
+ * Service Worker configuration
+ */
+interface ServiceWorkerConfig {
+  debug?: boolean;
+  offscreenDocumentPath?: string;
+}
+
+/**
+ * Default configuration
+ */
+const DEFAULT_CONFIG: Required<ServiceWorkerConfig> = {
+  debug: false,
+  offscreenDocumentPath: '/bg/background.html'
+};
+
+/**
+ * Global references
+ */
+let context: BootstrapContext | null = null;
+let backendService: BackendService | null = null;
+let isInitialized = false;
+
+/**
+ * Offscreen document management
+ */
+let creatingOffscreen: Promise<void> | null = null;
+
+/**
+ * Setup offscreen document for sandbox and audio playback
+ * Uses 'any' casts because Chrome types for Manifest V3 offscreen APIs
+ * are not fully available in @types/chrome
+ */
+async function setupOffscreenDocument(path: string): Promise<void> {
+  const offscreenUrl = chrome.runtime.getURL(path);
+
+  // Check if offscreen document already exists
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const existingContexts = await (chrome.runtime as any).getContexts({
+    contextTypes: ['OFFSCREEN_DOCUMENT'],
+    documentUrls: [offscreenUrl]
+  });
+
+  if (existingContexts && existingContexts.length > 0) {
+    return;
+  }
+
+  // Create offscreen document (avoid concurrency issues)
+  if (creatingOffscreen) {
+    await creatingOffscreen;
+  } else {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    creatingOffscreen = (chrome as any).offscreen.createDocument({
+      url: path,
+      reasons: ['CLIPBOARD'],
+      justification: 'ODH needs offscreen document for dictionary sandbox and audio playback'
+    });
+    await creatingOffscreen;
+    creatingOffscreen = null;
+  }
+}
+
+/**
+ * Keep Service Worker alive
+ * Manifest V3 Service Workers can be terminated, this keeps them active
+ */
+function keepAlive(): void {
+  setInterval(() => {
+    chrome.runtime.getPlatformInfo(() => {
+      // Just to keep the Service Worker active
+    });
+  }, 20000);
+}
+
+/**
+ * Register additional message handlers
+ */
+function registerAdditionalHandlers(ctx: BootstrapContext, backend: BackendService): void {
+  const { messageRouter } = ctx;
+
+  // Anki deck names handler
+  messageRouter.register(
+    MESSAGE_ACTIONS.GET_DECK_NAMES,
+    createHandler(MESSAGE_ACTIONS.GET_DECK_NAMES, async () => {
+      return backend.getDeckNames();
+    })
+  );
+
+  // Anki model names handler
+  messageRouter.register(
+    MESSAGE_ACTIONS.GET_MODEL_NAMES,
+    createHandler(MESSAGE_ACTIONS.GET_MODEL_NAMES, async () => {
+      return backend.getModelNames();
+    })
+  );
+
+  // Anki model field names handler
+  messageRouter.register(
+    MESSAGE_ACTIONS.GET_MODEL_FIELD_NAMES,
+    createHandler(MESSAGE_ACTIONS.GET_MODEL_FIELD_NAMES, async (params: { modelName: string }) => {
+      return backend.getModelFieldNames(params.modelName);
+    })
+  );
+
+  // Anki version handler
+  messageRouter.register(
+    MESSAGE_ACTIONS.GET_VERSION,
+    createHandler(MESSAGE_ACTIONS.GET_VERSION, async () => {
+      return backend.getAnkiVersion();
+    })
+  );
+
+  // Is connected handler
+  messageRouter.register(
+    MESSAGE_ACTIONS.IS_CONNECTED,
+    createHandler(MESSAGE_ACTIONS.IS_CONNECTED, async () => {
+      return backend.getAnkiVersion();
+    })
+  );
+
+  // Add note handler
+  messageRouter.register(
+    MESSAGE_ACTIONS.ADD_NOTE,
+    createHandler(MESSAGE_ACTIONS.ADD_NOTE, async (params: { notedef: NoteDefinition }) => {
+      return backend.addNote(params.notedef);
+    })
+  );
+
+  // Get translation handler
+  messageRouter.register(
+    MESSAGE_ACTIONS.GET_TRANSLATION,
+    createHandler(MESSAGE_ACTIONS.GET_TRANSLATION, async (params: { expression: string }) => {
+      let expression = params.expression;
+      // Fix trailing period issue
+      if (expression.endsWith('.')) {
+        expression = expression.slice(0, -1);
+      }
+      return backend.findTerm(expression);
+    })
+  );
+
+  // Find term handler (alias for getTranslation)
+  messageRouter.register(
+    MESSAGE_ACTIONS.FIND_TERM,
+    createHandler(MESSAGE_ACTIONS.FIND_TERM, async (params: { expression: string }) => {
+      return backend.findTerm(params.expression);
+    })
+  );
+
+  // Locale handler
+  messageRouter.register(
+    MESSAGE_ACTIONS.GET_LOCALE,
+    createHandler(MESSAGE_ACTIONS.GET_LOCALE, async () => {
+      return chrome.i18n.getUILanguage();
+    })
+  );
+
+  // Fetch handler (for dictionary scripts)
+  messageRouter.register(
+    MESSAGE_ACTIONS.FETCH,
+    createHandler(MESSAGE_ACTIONS.FETCH, async (params: { url: string }) => {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+        const response = await fetch(params.url, {
+          method: 'GET',
+          signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        return response.text();
+      } catch (error) {
+        console.error('Fetch error:', error);
+        return null;
+      }
+    })
+  );
+}
+
+/**
+ * Setup Chrome message listener
+ */
+function setupMessageListener(ctx: BootstrapContext, backend: BackendService): void {
+  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    const { action, params, target } = request;
+
+    // Skip messages targeted to background (offscreen document)
+    if (target === 'background') {
+      return false;
+    }
+
+    // Handle sandbox ready message
+    if (action === 'sandboxReady') {
+      backend.markSandboxReady();
+      sendResponse({ success: true });
+      return true;
+    }
+
+    // Handle sandbox ping
+    if (action === 'sandboxPing') {
+      sendResponse({ ready: backend.areDictionariesLoaded() });
+      return true;
+    }
+
+    // Route through MessageRouter
+    if (ctx.messageRouter.hasHandler(action)) {
+      const messageSender: MessageSender = {
+        tabId: sender.tab?.id,
+        frameId: sender.frameId,
+        url: sender.url,
+        extensionId: sender.id
+      };
+
+      ctx.messageRouter
+        .route({ action, params }, messageSender)
+        .then((response) => {
+          sendResponse(response.data);
+        })
+        .catch((error) => {
+          console.error(`Error handling ${action}:`, error);
+          sendResponse(null);
+        });
+
+      return true; // Will respond asynchronously
+    }
+
+    // Not handled
+    return false;
+  });
+}
+
+/**
+ * Setup event subscriptions
+ */
+function setupEventSubscriptions(ctx: BootstrapContext, backend: BackendService): void {
+  const { eventBus, optionsManager } = ctx;
+
+  // Subscribe to options changes
+  optionsManager.subscribe(async (event) => {
+    await backend.handleOptionsChanged(event.newOptions);
+    eventBus.emit(EVENTS.OPTIONS_CHANGED, event);
+  });
+
+  // Subscribe to bootstrap complete
+  eventBus.on(EVENTS.BOOTSTRAP_COMPLETE, async () => {
+    // Initialize dictionaries after bootstrap
+    try {
+      await backend.initializeDictionaries();
+    } catch (error) {
+      console.error('Failed to initialize dictionaries:', error);
+    }
+  });
+}
+
+/**
+ * Initialize the Service Worker
+ */
+async function initialize(config: ServiceWorkerConfig = {}): Promise<void> {
+  if (isInitialized) {
+    return;
+  }
+
+  // Merge with defaults
+  const finalConfig: Required<ServiceWorkerConfig> = {
+    debug: config.debug ?? DEFAULT_CONFIG.debug,
+    offscreenDocumentPath: config.offscreenDocumentPath ?? DEFAULT_CONFIG.offscreenDocumentPath
+  };
+
+  const log = (message: string) => {
+    if (finalConfig.debug) {
+      console.log(`[ServiceWorker] ${message}`);
+    }
+  };
+
+  try {
+    log('Initializing...');
+
+    // Setup offscreen document first
+    await setupOffscreenDocument(finalConfig.offscreenDocumentPath);
+    log('Offscreen document ready');
+
+    // Bootstrap the application
+    context = bootstrap({
+      debug: finalConfig.debug,
+      enableSecurity: true,
+      hooks: {
+        onBootstrapComplete: (_ctx) => {
+          log('Bootstrap complete');
+        },
+        onBootstrapError: (error) => {
+          console.error('Bootstrap error:', error);
+        }
+      }
+    });
+
+    // Load options from storage
+    await context.optionsManager.load();
+    const options = context.optionsManager.getCurrent();
+    log(`Options loaded: enabled=${options?.enabled}`);
+
+    // Create BackendService
+    backendService = createBackendService(
+      {
+        ankiConnectService: context.ankiConnectService,
+        ankiWebService: context.ankiWebService,
+        noteFormatterService: context.noteFormatterService
+      },
+      {
+        debug: finalConfig.debug
+      },
+      {
+        onInitialized: () => log('BackendService initialized'),
+        onDictionariesLoaded: () => log('Dictionaries loaded'),
+        onOptionsChanged: (opts) => log(`Options changed: enabled=${opts.enabled}`),
+        onError: (error, ctx) => console.error(`BackendService error in ${ctx}:`, error)
+      }
+    );
+
+    // Initialize BackendService with options
+    if (options) {
+      await backendService.initialize(options);
+    }
+
+    // Register additional handlers
+    registerAdditionalHandlers(context, backendService);
+    log('Additional handlers registered');
+
+    // Setup message listener
+    setupMessageListener(context, backendService);
+    log('Message listener setup');
+
+    // Setup event subscriptions
+    setupEventSubscriptions(context, backendService);
+    log('Event subscriptions setup');
+
+    // Register command handler
+    backendService.onCommand('enabled', async () => {
+      const currentOptions = context!.optionsManager.getCurrent();
+      if (currentOptions) {
+        const newOptions: ExtensionOptions = {
+          ...currentOptions,
+          enabled: !currentOptions.enabled
+        };
+        await context!.optionsManager.save(newOptions);
+      }
+    });
+
+    // Emit bootstrap complete event
+    context.eventBus.emit(EVENTS.BOOTSTRAP_COMPLETE, context);
+
+    isInitialized = true;
+    log('Initialization complete');
+  } catch (error) {
+    console.error('Failed to initialize Service Worker:', error);
+    throw error;
+  }
+}
+
+/**
+ * Entry Point
+ */
+
+// Keep Service Worker alive
+chrome.runtime.onStartup.addListener(keepAlive);
+keepAlive();
+
+// Initialize on startup
+initialize({ debug: true }).catch((error) => {
+  console.error('Service Worker initialization failed:', error);
+});
+
+/**
+ * Export for testing
+ */
+export {
+  initialize,
+  setupOffscreenDocument,
+  context as getContext,
+  backendService as getBackendService
+};
