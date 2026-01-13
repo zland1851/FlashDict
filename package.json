@@ -3,17 +3,19 @@
   "version": "1.0.7",
   "description": "Online Dictionary Helper - Chrome Extension",
   "scripts": {
-    "build": "tsc --build",
+    "build": "node scripts/build.js",
+    "build:tsc": "tsc --build",
     "build:watch": "tsc --watch",
     "build:clean": "tsc --build --clean",
+    "watch": "npm run build:watch",
+    "clean": "rm -rf dist && rm -rf coverage",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:e2e": "jest --testPathPattern=e2e",
     "test:unit": "jest --testPathPattern=unit",
     "lint": "tsc --noEmit",
-    "lint:fix": "tsc --noEmit --pretty",
-    "clean": "rm -rf dist && rm -rf coverage"
+    "lint:fix": "tsc --noEmit --pretty"
   },
   "keywords": [
     "chrome-extension",
