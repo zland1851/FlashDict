@@ -7,6 +7,7 @@ importScripts(
     'js/deinflector.js',
     'js/utils.js',
     'js/agent.js',
+    'js/options-compat.js', // Options compatibility layer (uses TS OptionsManager)
     'js/backend.js'
 );
 

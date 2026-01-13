@@ -100,27 +100,32 @@ This document outlines the revision plan to migrate ODH from JavaScript to TypeS
 
 ---
 
-### Step 2.2: Migrate Options Management
-**Goal**: Replace options handling with TypeScript OptionsManager
-**Risk**: Medium
-**Files to modify**:
-- `src/bg/js/options.js` (migrate to TypeScript)
-- Update `src/bg/js/backend.js` to use OptionsManager
-- Update `src/bg/js/popup.js` to use OptionsManager
+### Step 2.2: Replace Legacy Options with OptionsManager
+**Goal**: Use TypeScript OptionsManager for all options operations
+**Risk**: Low
+**Files created/modified**:
+- `src/bg/js/options-compat.js` (compatibility layer)
+- `src/bg/background.js` (load compat layer)
 
 **Changes**:
 1. ✅ OptionsManager.ts already created
-2. Migrate options.js TypeScript version
-3. Integrate OptionsManager with backend
-4. Update all options access patterns
-5. Add options change event handling
+2. ✅ Created options-compat.js bridging legacy optionsLoad/optionsSave to TS OptionsManager
+3. ✅ Service Worker now uses OptionsManager via compatibility layer
+4. ✅ Fallback to legacy implementation if TS not yet initialized
+5. ✅ Options page (options.html) still uses legacy utils.js (works fine)
+
+**Implementation**:
+- Compatibility layer overrides global optionsLoad/optionsSave functions
+- In Service Worker: Routes to OptionsManager.load() and .save()
+- In pages (options/popup): Still uses chrome.storage directly via utils.js
+- Graceful fallback if TypeScript services not initialized yet
 
 **Testing Checklist**:
-- [ ] Options load correctly
-- [ ] Options save correctly
-- [ ] Options update correctly
-- [ ] Options page works
-- [ ] Default options apply
+- [ ] Service Worker loads options via OptionsManager
+- [ ] Options page loads/saves correctly
+- [ ] Backend initialization works
+- [ ] Options changes persist
+- [ ] No console errors on extension load
 
 ---
 
@@ -499,7 +504,7 @@ src/
 
 ### Phase 2: Background Services Migration - IN PROGRESS 🔄
 - [x] Step 2.1: Integrate TypeScript Services with Legacy Backend
-- [ ] Step 2.2: Replace Legacy Options with OptionsManager
+- [x] Step 2.2: Replace Legacy Options with OptionsManager
 - [ ] Step 2.3: Replace Legacy Anki Services with TypeScript
 - [ ] Step 2.4: Migrate Dictionary Services
 - [ ] Step 2.5: Migrate Audio Services
