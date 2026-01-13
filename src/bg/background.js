@@ -1,13 +1,14 @@
 // Service Worker entry point for Manifest V3
 // Import all necessary scripts (legacy)
 importScripts(
-    'js/ankiconnect.js',
-    'js/ankiweb.js',
+    'js/ankiconnect.js',        // Legacy AnkiConnect (will be overridden)
+    'js/ankiweb.js',             // Legacy AnkiWeb (will be overridden)
     'js/builtin.js',
     'js/deinflector.js',
     'js/utils.js',
     'js/agent.js',
-    'js/options-compat.js', // Options compatibility layer (uses TS OptionsManager)
+    'js/anki-compat.js',         // Anki compatibility layer (uses TS Anki services)
+    'js/options-compat.js',      // Options compatibility layer (uses TS OptionsManager)
     'js/backend.js'
 );
 

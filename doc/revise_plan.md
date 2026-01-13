@@ -129,9 +129,48 @@ This document outlines the revision plan to migrate ODH from JavaScript to TypeS
 
 ---
 
-### Step 2.3: Migrate Dictionary Services
+### Step 2.3: Replace Legacy Anki Services with TypeScript
+**Goal**: Use TypeScript Anki services for all Anki operations
+**Risk**: Low
+**Files created/modified**:
+- `src/bg/js/anki-compat.js` (Anki compatibility layer)
+- `src/bg/background.js` (load anki-compat after legacy services)
+
+**Changes**:
+1. ✅ AnkiConnectService.ts already created with full IAnkiService interface
+2. ✅ AnkiWebService.ts already created with full IAnkiService interface
+3. ✅ Created anki-compat.js with wrapper classes Ankiconnect and Ankiweb
+4. ✅ Wrappers delegate to TypeScript services when available
+5. ✅ Graceful fallback to legacy implementation if TS not initialized
+6. ✅ Maintains exact same API as legacy classes (no backend.js changes needed)
+
+**Implementation**:
+- Wrapper classes override legacy Ankiconnect/Ankiweb classes
+- Backend instantiates `new Ankiconnect()` and `new Ankiweb()` - gets wrappers
+- Wrappers delegate all methods to TypeScript services:
+  - `addNote()` → `ankiConnectService.addNote()`
+  - `getDeckNames()` → `ankiConnectService.getDeckNames()`
+  - `getModelNames()` → `ankiConnectService.getModelNames()`
+  - `getModelFieldNames()` → `ankiConnectService.getModelFieldNames()`
+  - `getVersion()` → `ankiConnectService.getVersion()`
+- AnkiWeb wrapper handles `initConnection()` and profile caching
+- Type-safe error handling with proper logging
+
+**Testing Checklist**:
+- [ ] AnkiConnect connection works
+- [ ] AnkiWeb login and connection works
+- [ ] Deck/model names load correctly
+- [ ] Field names load correctly
+- [ ] Note adding works
+- [ ] Error handling provides useful feedback
+
+---
+
+### Step 2.4: Migrate Dictionary Services
 **Goal**: Create TypeScript dictionary service architecture
 **Risk**: Medium
+**Status**: PENDING
+
 **Files to create**:
 - `src/bg/ts/services/DictionaryService.ts`
 - `src/bg/ts/services/DictionaryLoader.ts`
@@ -157,9 +196,11 @@ This document outlines the revision plan to migrate ODH from JavaScript to TypeS
 
 ---
 
-### Step 2.4: Migrate Audio Services
+### Step 2.5: Migrate Audio Services
 **Goal**: Create TypeScript audio service
 **Risk**: Medium
+**Status**: PENDING
+
 **Files to create**:
 - `src/bg/ts/services/AudioService.ts`
 - Implement `IAudioPlayer` interface
@@ -179,32 +220,6 @@ This document outlines the revision plan to migrate ODH from JavaScript to TypeS
 - [ ] Audio selection works
 - [ ] Audio for Anki works
 - [ ] Multiple audio sources work
-
----
-
-### Step 2.5: Create Service Bootstrap
-**Goal**: Use DI Container to initialize all services
-**Risk**: Medium
-**Files to create**:
-- `src/bg/ts/bootstrap.ts`
-- `src/bg/ts/services/index.ts`
-
-**Files to modify**:
-- `src/bg/background.js`
-
-**Changes**:
-1. Create bootstrap function to register all services
-2. Wire up dependencies via Container
-3. Initialize EventBus for inter-service communication
-4. Set up MessageRouter with all handlers
-5. Update background.js to use bootstrap
-
-**Testing Checklist**:
-- [ ] All services initialize correctly
-- [ ] Dependencies resolve correctly
-- [ ] Message routing works
-- [ ] Event bus works
-- [ ] No circular dependencies
 
 ---
 
@@ -505,7 +520,7 @@ src/
 ### Phase 2: Background Services Migration - IN PROGRESS 🔄
 - [x] Step 2.1: Integrate TypeScript Services with Legacy Backend
 - [x] Step 2.2: Replace Legacy Options with OptionsManager
-- [ ] Step 2.3: Replace Legacy Anki Services with TypeScript
+- [x] Step 2.3: Replace Legacy Anki Services with TypeScript
 - [ ] Step 2.4: Migrate Dictionary Services
 - [ ] Step 2.5: Migrate Audio Services
 
