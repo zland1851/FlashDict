@@ -3,11 +3,15 @@
   "version": "1.0.7",
   "description": "Online Dictionary Helper - Chrome Extension",
   "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:e2e": "jest --testPathPattern=e2e",
-    "test:unit": "jest --testPathPattern=unit"
+    "test:unit": "jest --testPathPattern=unit",
+    "lint": "tsc --noEmit",
+    "clean": "rm -rf dist"
   },
   "keywords": [
     "chrome-extension",
@@ -17,24 +21,18 @@
   "author": "Zhenyu Huang",
   "license": "MIT",
   "devDependencies": {
+    "@types/chrome": "^0.0.260",
+    "@types/dompurify": "^3.0.5",
     "@types/jest": "^29.5.0",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
-    "puppeteer": "^24.35.0"
+    "puppeteer": "^24.35.0",
+    "ts-jest": "^29.1.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.0"
   },
-  "jest": {
-    "testEnvironment": "node",
-    "testMatch": [
-      "**/tests/**/*.test.js"
-    ],
-    "collectCoverageFrom": [
-      "src/**/*.js",
-      "!src/lib/**",
-      "!src/dict/**"
-    ],
-    "coveragePathIgnorePatterns": [
-      "/node_modules/",
-      "/tests/"
-    ]
+  "dependencies": {
+    "dompurify": "^3.0.8",
+    "zod": "^3.22.0"
   }
 }
