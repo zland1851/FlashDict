@@ -521,8 +521,8 @@ src/
 - [x] Step 2.1: Integrate TypeScript Services with Legacy Backend
 - [x] Step 2.2: Replace Legacy Options with OptionsManager
 - [x] Step 2.3: Replace Legacy Anki Services with TypeScript
-- [ ] Step 2.4: Migrate Dictionary Services
-- [ ] Step 2.5: Migrate Audio Services
+- [ ] Step 2.4: Migrate Dictionary Services (COMPLEX - sandbox architecture)
+- [ ] Step 2.5: Migrate Audio Services (PENDING)
 
 ### Phase 3: Content Script Migration - PENDING
 - [ ] Step 3.1: Migrate Frontend API
@@ -538,4 +538,68 @@ src/
 - [ ] Step 5.1: Remove Legacy Code
 - [ ] Step 5.2: Update Documentation
 - [ ] Step 5.3: Final Testing & Release
-·
+
+---
+
+## Migration Progress Summary
+
+**Overall Progress**: ~38% complete (Phase 1 + 60% of Phase 2)
+
+**Completed** (6 commits, ~3,500+ lines):
+1. ✅ TypeScript infrastructure (Container, EventBus, MessageRouter)
+2. ✅ Service interfaces and implementations
+3. ✅ Build system with asset copying
+4. ✅ TypeScript/Legacy integration (bridge.ts)
+5. ✅ Options migration (options-compat.js → OptionsManager)
+6. ✅ Anki services migration (anki-compat.js → AnkiConnect/AnkiWeb services)
+
+**Key Achievements**:
+- Hybrid architecture: TypeScript and legacy coexist safely
+- Zero breaking changes to existing functionality
+- Type-safe operations for options and Anki integration
+- Comprehensive documentation (TYPESCRIPT_ARCHITECTURE.md, MIGRATION_PROGRESS.md)
+- Fast build system (~0.9s)
+- Dynamic import pattern enables ES6 modules in Service Worker
+
+**Next Steps**:
+- Dictionary services require careful sandbox architecture analysis
+- Audio services are simpler but need offscreen document integration
+- Content scripts can begin after backend services complete
+
+**See**: `docs/MIGRATION_PROGRESS.md` for detailed progress tracking.
+
+---
+
+## Notes for Dictionary Service Migration
+
+**Complexity**: HIGH - Sandbox architecture with multi-layer communication
+
+**Current Architecture**:
+```
+Service Worker (backend.js)
+    ↓ chrome.runtime.sendMessage
+Offscreen Document (background.html)
+    ↓ postMessage
+Sandbox iframe (sandbox.html)
+    ↓ Script execution
+Dictionary scripts (builtin, system, user-defined)
+```
+
+**Key Files**:
+- `src/bg/js/agent.js` - Sandbox communication agent
+- `src/bg/js/backend.js` - loadScripts(), findTerm()
+- `src/bg/sandbox/sandbox.js` - Script loading and execution
+- `src/bg/sandbox/api.js` - Dictionary script API
+
+**Migration Strategy** (when ready):
+1. Analyze sandbox message flow
+2. Create DictionaryService for script management
+3. Create DictionaryLoader for fetching/caching scripts
+4. Create TranslationService for query handling
+5. Maintain sandbox architecture (don't rewrite)
+6. Create compatibility layer for backend.js
+7. Test with builtin, system, and user-defined scripts
+
+**Estimated Effort**: 2-3 days of focused work
+
+---
