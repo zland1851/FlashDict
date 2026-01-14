@@ -338,15 +338,7 @@ export class AnkiConnectService implements IAnkiService {
    * Validate the AnkiConnect response structure
    */
   private validateResponse<T>(response: AnkiConnectResponse<T>, action: string): void {
-    const keys = Object.getOwnPropertyNames(response);
-
-    if (keys.length !== 2) {
-      throw new AnkiConnectError(
-        'Response has an unexpected number of fields',
-        action
-      );
-    }
-
+    // Check for required fields first (more specific errors)
     if (!Object.prototype.hasOwnProperty.call(response, 'error')) {
       throw new AnkiConnectError(
         'Response is missing required error field',
@@ -357,6 +349,15 @@ export class AnkiConnectService implements IAnkiService {
     if (!Object.prototype.hasOwnProperty.call(response, 'result')) {
       throw new AnkiConnectError(
         'Response is missing required result field',
+        action
+      );
+    }
+
+    // Check for unexpected extra fields
+    const keys = Object.getOwnPropertyNames(response);
+    if (keys.length !== 2) {
+      throw new AnkiConnectError(
+        'Response has an unexpected number of fields',
         action
       );
     }
