@@ -65,6 +65,17 @@ export function isNonEmptyString(value: unknown): ValidationResult<string> {
 }
 
 /**
+ * Validate callback ID (can be string or number)
+ * The sandbox Agent uses Math.random() which produces a number
+ */
+export function isCallbackId(value: unknown): ValidationResult<string | number> {
+  if (typeof value === 'string' || typeof value === 'number') {
+    return { success: true, data: value };
+  }
+  return { success: false, error: 'Expected string or number callback ID' };
+}
+
+/**
  * Validate string with max length
  */
 export function isStringMaxLength(maxLength: number): ValidatorFn<string> {
@@ -330,12 +341,12 @@ export function createObjectValidator<T extends Record<string, unknown>>(
  */
 export interface AudioParams {
   url: string;
-  callbackId?: string;
+  callbackId?: string | number;
 }
 
 export const validateAudioParams: ValidatorFn<AudioParams> = createObjectValidator({
   url: isAudioUrl,
-  callbackId: isOptional(isString)
+  callbackId: isOptional(isCallbackId)
 }, { allowExtra: false });
 
 /**
@@ -343,12 +354,12 @@ export const validateAudioParams: ValidatorFn<AudioParams> = createObjectValidat
  */
 export interface TranslationParams {
   expression: string;
-  callbackId?: string;
+  callbackId?: string | number;
 }
 
 export const validateTranslationParams: ValidatorFn<TranslationParams> = createObjectValidator({
   expression: isNonEmptyString,
-  callbackId: isOptional(isString)
+  callbackId: isOptional(isCallbackId)
 }, { allowExtra: false });
 
 /**
@@ -381,12 +392,12 @@ export const validateNoteDefParams: ValidatorFn<NoteDefParams> = createObjectVal
  */
 export interface LoadScriptParams {
   name: string;
-  callbackId?: string;
+  callbackId?: string | number;
 }
 
 export const validateLoadScriptParams: ValidatorFn<LoadScriptParams> = createObjectValidator({
   name: isScriptUrl,
-  callbackId: isOptional(isString)
+  callbackId: isOptional(isCallbackId)
 }, { allowExtra: false });
 
 /**
@@ -394,12 +405,12 @@ export const validateLoadScriptParams: ValidatorFn<LoadScriptParams> = createObj
  */
 export interface FindTermParams {
   expression: string;
-  callbackId?: string;
+  callbackId?: string | number;
 }
 
 export const validateFindTermParams: ValidatorFn<FindTermParams> = createObjectValidator({
   expression: isNonEmptyString,
-  callbackId: isOptional(isString)
+  callbackId: isOptional(isCallbackId)
 }, { allowExtra: false });
 
 /**
@@ -407,12 +418,12 @@ export const validateFindTermParams: ValidatorFn<FindTermParams> = createObjectV
  */
 export interface FetchParams {
   url: string;
-  callbackId?: string;
+  callbackId?: string | number;
 }
 
 export const validateFetchParams: ValidatorFn<FetchParams> = createObjectValidator({
   url: isFetchUrl,
-  callbackId: isOptional(isString)
+  callbackId: isOptional(isCallbackId)
 }, { allowExtra: false });
 
 /**
@@ -420,12 +431,12 @@ export const validateFetchParams: ValidatorFn<FetchParams> = createObjectValidat
  */
 export interface DeinflectParams {
   word: string;
-  callbackId?: string;
+  callbackId?: string | number;
 }
 
 export const validateDeinflectParams: ValidatorFn<DeinflectParams> = createObjectValidator({
   word: isNonEmptyString,
-  callbackId: isOptional(isString)
+  callbackId: isOptional(isCallbackId)
 }, { allowExtra: false });
 
 // ============================================================================
@@ -482,7 +493,7 @@ export interface BaseMessage {
   action: string;
   params?: unknown;
   target?: string;
-  callbackId?: string;
+  callbackId?: string | number;
 }
 
 /**
@@ -492,7 +503,7 @@ export const validateBaseMessage: ValidatorFn<BaseMessage> = createObjectValidat
   action: isNonEmptyString,
   params: isOptional((v) => ({ success: true, data: v })),
   target: isOptional(isString),
-  callbackId: isOptional(isString)
+  callbackId: isOptional(isCallbackId)
 }, { allowExtra: true });
 
 /**
