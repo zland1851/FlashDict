@@ -1,6 +1,7 @@
 /*global Agent */
 class SandboxAPI {
     constructor() {
+        // Use Agent to communicate with parent window (offscreen document)
         this.agent = new Agent(window.parent);
     }
 

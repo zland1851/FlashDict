@@ -3,6 +3,8 @@ class Sandbox {
     constructor() {
         this.dicts = {};
         this.current = null;
+        
+        // Listen for messages from parent window (offscreen document)
         window.addEventListener('message', e => this.onBackendMessage(e));
     }
 
@@ -33,18 +35,49 @@ class Sandbox {
     async backend_loadScript(params) {
         let { name, callbackId } = params;
 
+        // Input validation: ensure name is a valid string
+        if (!name || typeof name !== 'string' || name.trim().length === 0) {
+            api.callback({ name, result: null }, callbackId);
+            return;
+        }
+
         let scripttext = await api.fetch(this.buildScriptURL(name));
-        if (!scripttext) api.callback({ name, result: null }, callbackId);
+        if (!scripttext) {
+            api.callback({ name, result: null }, callbackId);
+            return;
+        }
+
+        // Basic validation: ensure scripttext is a string and not empty
+        if (typeof scripttext !== 'string' || scripttext.trim().length === 0) {
+            api.callback({ name, result: null }, callbackId);
+            return;
+        }
+
         try {
+            // Note: eval() is used here because we're in a sandboxed environment
+            // The sandbox page is isolated and can only communicate via postMessage
+            // This is the intended design for executing user-defined dictionary scripts
             let SCRIPT = eval(`(${scripttext})`);
-            if (SCRIPT.name && typeof SCRIPT === 'function') {
-                let script = new SCRIPT();
-                //if (!this.dicts[SCRIPT.name]) 
-                this.dicts[SCRIPT.name] = script;
-                let displayname = typeof(script.displayName) === 'function' ? await script.displayName() : SCRIPT.name;
-                api.callback({ name, result: { objectname: SCRIPT.name, displayname } }, callbackId);
+            
+            // Validate that the result is a function
+            if (!SCRIPT || typeof SCRIPT !== 'function') {
+                api.callback({ name, result: null }, callbackId);
+                return;
             }
+
+            // Validate that the function has a name property
+            if (!SCRIPT.name) {
+                api.callback({ name, result: null }, callbackId);
+                return;
+            }
+
+            let script = new SCRIPT();
+            this.dicts[SCRIPT.name] = script;
+            let displayname = typeof(script.displayName) === 'function' ? await script.displayName() : SCRIPT.name;
+            api.callback({ name, result: { objectname: SCRIPT.name, displayname } }, callbackId);
         } catch (err) {
+            // Log error for debugging but don't expose to user
+            console.error('Error loading script:', name, err);
             api.callback({ name, result: null }, callbackId);
             return;
         }
@@ -80,6 +113,9 @@ class Sandbox {
 }
 
 window.sandbox = new Sandbox();
+
+// Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
+    // Initialize backend
     api.initBackend();
 }, false);
