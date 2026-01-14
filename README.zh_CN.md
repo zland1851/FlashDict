@@ -4,21 +4,12 @@
 
 Chrome浏览器扩展，网页划词查询，一键创建Anki卡片。
 
-![Anki Notes](https://raw.githubusercontent.com/ninja33/ODH/master/doc/img/anki_001_640x400.png)
-
 ## 功能特点
 
 - **划词翻译** - 在任意网页上选中文字即可查看释义
 - **多词典支持** - 支持Collins、Cambridge、Oxford等多种词典
 - **Anki集成** - 通过AnkiConnect或AnkiWeb创建卡片
 - **发音播放** - 收听单词发音
-- **PDF支持** - 支持PDF.js阅读器页面
-- **自定义词典** - 可添加自定义词典脚本
-
-## 安装
-
-- [Chrome商店安装](https://chrome.google.com/webstore/detail/anki-online-dictionary-he/lppjdajkacanlmpbbcdkccjkdbpllajb?hl=en)
-- [Firefox扩展安装](https://addons.mozilla.org/en-US/firefox/addon/online-dictionary-helper/)
 
 ## 快速开始
 
@@ -27,7 +18,7 @@ Chrome浏览器扩展，网页划词查询，一键创建Anki卡片。
 3. 弹窗显示单词释义
 4. （可选）点击 **(+)** 按钮将单词添加到Anki
 
-对于链接文字，按住 <kbd>Alt</kbd> 键选择，或使用快捷键（默认：<kbd>Alt+Q</kbd>）。
+对于链接文字，按住 <kbd>Shift</kbd> 键选择，或使用快捷键（默认：<kbd>Shift+Q</kbd>）。
 
 ## 配置选项
 
@@ -38,8 +29,8 @@ Chrome浏览器扩展，网页划词查询，一键创建Anki卡片。
 |------|------|
 | 启用 | 开启/关闭扩展 |
 | 快捷键 | 配置选词快捷键（Shift/Ctrl/Alt） |
-| 最大原句数 | 从页面上下文提取的最大句子数 |
-| 最大例句数 | 词典中显示的最大例句数 |
+| 选择词典 | 通过 dict 列表选择词典 |
+
 
 ### Anki集成
 配置牌组名称、笔记类型和字段映射：
@@ -56,8 +47,6 @@ Chrome浏览器扩展，网页划词查询，一键创建Anki卡片。
 - 加载在线词典（Cambridge、Oxford、有道等）
 - 添加自定义词典脚本
 
-![Options Page](https://raw.githubusercontent.com/ninja33/ODH/master/doc/img/option_general_640x400.png)
-
 ## 开发
 
 ### 环境要求
@@ -66,7 +55,7 @@ Chrome浏览器扩展，网页划词查询，一键创建Anki卡片。
 
 ### 安装步骤
 ```bash
-git clone https://github.com/ninja33/ODH.git
+git clone https://github.com/zland1851/ODH.git
 cd ODH
 npm install
 npm run build
@@ -104,11 +93,9 @@ src/
 
 可用词典脚本列表见 [scriptlist.zh_CN.md](doc/scriptlist.zh_CN.md)。
 
-## 贡献
+## 致谢
 
-欢迎提交PR：
-- 扩展改进 → `/src`
-- 新词典脚本 → `/src/dict`
+本项目基于 [ninja33/ODH](https://github.com/ninja33/ODH)
 
 ## 许可证
 

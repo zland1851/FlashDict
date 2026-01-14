@@ -4,21 +4,12 @@
 
 A Chrome extension for looking up word definitions and creating Anki flashcards from any webpage.
 
-![Anki Notes](https://raw.githubusercontent.com/ninja33/ODH/master/doc/img/anki_001_640x400.png)
-
 ## Features
 
 - **Text Selection Lookup** - Select text on any webpage to see definitions
 - **Multiple Dictionaries** - Support for Collins, Cambridge, Oxford, and more
 - **Anki Integration** - Create flashcards via AnkiConnect or AnkiWeb
 - **Audio Playback** - Listen to word pronunciations
-- **PDF Support** - Works with PDF.js viewer pages
-- **Custom Dictionaries** - Add your own dictionary scripts
-
-## Installation
-
-- [Install from Chrome Web Store](https://chrome.google.com/webstore/detail/anki-online-dictionary-he/lppjdajkacanlmpbbcdkccjkdbpllajb?hl=en)
-- [Install from Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/online-dictionary-helper/)
 
 ## Quick Start
 
@@ -27,7 +18,7 @@ A Chrome extension for looking up word definitions and creating Anki flashcards 
 3. A popup appears with the word definition
 4. (Optional) Click the **(+)** button to add the word to Anki
 
-For link text, hold <kbd>Alt</kbd> while selecting or use the hotkey (default: <kbd>Alt+Q</kbd>).
+For link text, hold <kbd>Shift</kbd> while selecting or use the hotkey (default: <kbd>Shift+Q</kbd>).
 
 ## Configuration
 
@@ -38,8 +29,7 @@ Access the options page by clicking the extension icon → Options.
 |--------|-------------|
 | Enabled | Turn extension on/off |
 | Hotkey | Configure selection hotkey (Shift/Ctrl/Alt) |
-| Max Context | Maximum sentences from page context |
-| Max Example | Maximum example sentences from dictionary |
+
 
 ### Anki Integration
 Configure deck name, note type, and field mappings for:
@@ -56,8 +46,6 @@ Requires [Anki](https://apps.ankiweb.net/) desktop with [AnkiConnect](https://gi
 - Load online dictionaries (Cambridge, Oxford, Youdao, etc.)
 - Add custom dictionary scripts
 
-![Options Page](https://raw.githubusercontent.com/ninja33/ODH/master/doc/img/option_general_640x400_en.png)
-
 ## Development
 
 ### Prerequisites
@@ -66,8 +54,8 @@ Requires [Anki](https://apps.ankiweb.net/) desktop with [AnkiConnect](https://gi
 
 ### Setup
 ```bash
-git clone https://github.com/ninja33/ODH.git
-cd ODH
+git clone https://github.com/zland1851/FlashDict.git
+cd FlashDict
 npm install
 npm run build
 ```
@@ -104,15 +92,9 @@ Create your own dictionary scripts to scrape definitions from any online source.
 
 Available dictionary scripts are listed in [scriptlist.md](doc/scriptlist.md).
 
-## Contributing
+## Acknowledgements
 
-Pull requests welcome for:
-- Extension improvements → `/src`
-- New dictionary scripts → `/src/dict`
-
-## Background
-
-Learn about the project's origins and motivation in [background.md](doc/background.md).
+This project is based on [ninja33/ODH](https://github.com/ninja33/ODH).
 
 ## License
 
