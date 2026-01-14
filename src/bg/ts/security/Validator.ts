@@ -204,6 +204,43 @@ export function isAudioUrl(value: unknown): ValidationResult<string> {
 }
 
 /**
+ * Validate fetch URL (allows relative paths, extension URLs, and http/https)
+ * Used for dictionary script fetching where URLs can be:
+ * - Relative: /dict/encn_Collins.js
+ * - Extension: chrome-extension://xxx/dict/encn_Collins.js
+ * - Remote: https://example.com/script.js
+ */
+export function isFetchUrl(value: unknown): ValidationResult<string> {
+  if (typeof value !== 'string') {
+    return { success: false, error: 'Expected string URL' };
+  }
+
+  // Allow relative paths (starting with /)
+  if (value.startsWith('/')) {
+    // Basic path validation - no directory traversal
+    if (value.includes('..')) {
+      return { success: false, error: 'Path traversal not allowed' };
+    }
+    return { success: true, data: value };
+  }
+
+  // Allow absolute URLs with specific protocols
+  try {
+    const url = new URL(value);
+    const allowedProtocols = ['http:', 'https:', 'chrome-extension:'];
+    if (!allowedProtocols.includes(url.protocol)) {
+      return {
+        success: false,
+        error: `URL protocol must be one of: ${allowedProtocols.join(', ')}`
+      };
+    }
+    return { success: true, data: value };
+  } catch {
+    return { success: false, error: 'Invalid URL format' };
+  }
+}
+
+/**
  * Validate script URL (allows http, https only)
  */
 export function isScriptUrl(value: unknown): ValidationResult<string> {
@@ -374,7 +411,7 @@ export interface FetchParams {
 }
 
 export const validateFetchParams: ValidatorFn<FetchParams> = createObjectValidator({
-  url: isUrl(['http:', 'https:']),
+  url: isFetchUrl,
   callbackId: isOptional(isString)
 }, { allowExtra: false });
 
