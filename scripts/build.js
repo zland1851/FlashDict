@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Build script for ODH Extension
+ * Build script for FlashDict Extension
  *
  * This script:
  * 1. Cleans the dist directory

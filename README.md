@@ -94,8 +94,8 @@ Available dictionary scripts are listed in [scriptlist.md](doc/scriptlist.md).
 
 ## Acknowledgements
 
-This project is based on [ninja33/ODH](https://github.com/ninja33/ODH).
+This project is based on [ninja33/ODH](https://github.com/ninja33/ODH), now maintained at [zland1851/FlashDict](https://github.com/zland1851/FlashDict).
 
 ## License
 
-GPL-3.0
+MIT License

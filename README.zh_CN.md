@@ -95,7 +95,7 @@ src/
 
 ## 致谢
 
-本项目基于 [ninja33/ODH](https://github.com/ninja33/ODH)
+本项目基于 [ninja33/ODH](https://github.com/ninja33/ODH)，现维护于 [zland1851/FlashDict](https://github.com/zland1851/FlashDict)
 
 ## 许可证
 

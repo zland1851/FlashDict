@@ -1,18 +1,12 @@
 /* Modern Script List */
 
-.scriptlistwrapper {
-  border: 1px solid var(--border, #e2e8f0);
-  border-radius: 8px;
-  overflow: hidden;
-  margin-top: 12px;
-}
-
 .sl-head {
-  display: grid;
-  grid-template-columns: 50px 50px 140px 1fr;
+  display: flex;
   padding: 10px 12px;
   background: var(--bg-tertiary, #f1f5f9);
-  border-bottom: 1px solid var(--border, #e2e8f0);
+  border: 1px solid var(--border, #e2e8f0);
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
   font-size: 11px;
   font-weight: 600;
   color: var(--text-secondary, #64748b);
@@ -21,15 +15,21 @@
   margin: 0;
 }
 
+.scriptlistwrapper {
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 0 0 8px 8px;
+  overflow: hidden;
+  margin: 0;
+}
+
 .sl-body {
-  height: 240px;
+  max-height: 280px;
   overflow-y: auto;
   background: var(--bg-primary, #ffffff);
 }
 
 .sl-row {
-  display: grid;
-  grid-template-columns: 50px 50px 140px 1fr;
+  display: flex;
   padding: 10px 12px;
   align-items: center;
   transition: background 0.15s;
@@ -44,32 +44,46 @@
   border-top: 1px solid var(--border, #e2e8f0);
 }
 
-.sl-col {
+/* Column sizing */
+.sl-col-onoff {
+  width: 50px;
+  flex-shrink: 0;
   display: flex;
+  justify-content: center;
   align-items: center;
-  font-size: 13px;
-  color: var(--text-primary, #1e293b);
-  margin: 0;
-  padding: 0;
 }
 
-.sl-col-onoff,
 .sl-col-cloud {
+  width: 40px;
+  flex-shrink: 0;
+  display: flex;
   justify-content: center;
+  align-items: center;
 }
 
 .sl-col-name {
+  width: 160px;
+  flex-shrink: 0;
+  font-size: 13px;
   font-weight: 500;
   color: var(--text-primary, #1e293b);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding-right: 8px;
 }
 
 .sl-col-description {
+  flex: 1;
   font-size: 12px;
   color: var(--text-secondary, #64748b);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-/* Modern checkbox in script list */
-.sl-col input[type="checkbox"] {
+/* Checkbox styling - inputs that ARE the sl-col elements */
+input[type="checkbox"].sl-col {
   width: 16px;
   height: 16px;
   margin: 0;
@@ -78,11 +92,13 @@
   border-radius: 4px;
   cursor: pointer;
   appearance: none;
+  -webkit-appearance: none;
   background: var(--bg-primary, #ffffff);
   transition: all 0.15s;
+  flex-shrink: 0;
 }
 
-.sl-col input[type="checkbox"]:checked {
+input[type="checkbox"].sl-col:checked {
   background: var(--primary, #2563eb);
   border-color: var(--primary, #2563eb);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='white'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E");
@@ -91,18 +107,16 @@
   background-repeat: no-repeat;
 }
 
-.sl-col input[type="checkbox"]:hover {
+input[type="checkbox"].sl-col:hover {
   border-color: var(--primary, #2563eb);
 }
 
-.sl-col input[type="checkbox"]:focus {
+input[type="checkbox"].sl-col:focus {
   outline: none;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
 }
 
-/* Cloud icon placeholder */
-.sl-col-cloud .cloud-icon {
-  width: 16px;
-  height: 16px;
-  color: var(--text-muted, #94a3b8);
+/* Hidden class for cloud column toggle */
+.sl-col.hidden {
+  display: none !important;
 }

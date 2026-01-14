@@ -43,4 +43,3 @@ Class YourClassName{
 }
 ```
 
-You can find the dictionary script source code sample under [/src/dict](https://github.com/ninja33/ODH/tree/master/src/dict) of this repository.

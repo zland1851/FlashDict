@@ -326,3 +326,17 @@ a.tabmenu.active {
 #anki-options .rightpanel label:first-child {
   margin-top: 0;
 }
+
+/* Script list container - override crosspanel grid */
+.crosspanel:has(.sl-head) {
+  display: block;
+  padding: 0;
+}
+
+.crosspanel:has(.sl-head) .sl-head {
+  margin: 0;
+}
+
+.crosspanel:has(.sl-head) .scriptlistwrapper {
+  margin: 0;
+}

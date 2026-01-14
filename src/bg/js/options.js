@@ -78,7 +78,7 @@ function populateSysScriptsList(dictLibrary) {
     systemscripts.forEach(script => {
         let row = '';
         row += `<input class="sl-col sl-col-onoff" type="checkbox" ${optionscripts.includes(script) || optionscripts.includes('lib://'+script)?'checked':''}>`;
-        row += `<input class="sl-col sl-col-cloud" type="checkbox" ${optionscripts.includes('lib://'+script)?'checked':''}>`;
+        row += `<input class="sl-col sl-col-cloud hidden" type="checkbox" ${optionscripts.includes('lib://'+script)?'checked':''}>`;
         row += `<span class="sl-col sl-col-name">${script}</span>`;
         row += `<span class="sl-col sl-col-description">${chrome.i18n.getMessage(script)}</span>`;
         $('#scriptslistbody').append($(`<div class="sl-row">${row}</div>`));

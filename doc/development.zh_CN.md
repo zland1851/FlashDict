@@ -39,5 +39,3 @@ Class YouClassName{
     }
 }
 ```
-
-你可以在源代码目录[/src/dict](https://github.com/ninja33/ODH/tree/master/src/dict)下找到脚本样例.

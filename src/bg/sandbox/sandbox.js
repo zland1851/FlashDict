@@ -17,7 +17,7 @@ class Sandbox {
     }
 
     buildScriptURL(name) {
-        let gitbase = 'https://raw.githubusercontent.com/ninja33/ODH/master/src/dict/';
+        let gitbase = 'https://raw.githubusercontent.com/zland1851/FlashDict/master/src/dict/';
         let url = name;
 
         if (url.indexOf('://') == -1) {
