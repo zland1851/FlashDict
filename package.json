@@ -1,6 +1,6 @@
 {
   "name": "flashdict",
-  "version": "1.0.8",
+  "version": "1.0.0",
   "description": "FlashDict - Look up words and create Anki flashcards",
   "scripts": {
     "build": "node scripts/build.js",
