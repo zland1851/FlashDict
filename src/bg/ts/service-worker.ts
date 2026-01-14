@@ -170,8 +170,34 @@ function registerAdditionalHandlers(ctx: BootstrapContext, backend: BackendServi
     })
   );
 
-  // Note: getTranslation and findTerm are already registered by HandlerRegistry in bootstrap
-  // They use the DictionaryHandler which delegates to the sandbox
+  // Override getTranslation and findTerm handlers from bootstrap
+  // Bootstrap registers DictionaryHandler with empty local dictionaries
+  // We need handlers that use BackendService which routes through sandbox
+  messageRouter.unregister(MESSAGE_ACTIONS.GET_TRANSLATION);
+  messageRouter.unregister(MESSAGE_ACTIONS.FIND_TERM);
+
+  // Get translation handler - uses sandbox via BackendService
+  messageRouter.register(
+    MESSAGE_ACTIONS.GET_TRANSLATION,
+    createHandler(MESSAGE_ACTIONS.GET_TRANSLATION, async (params: { expression: string }) => {
+      let expression = params.expression;
+      // Fix trailing period issue
+      if (expression.endsWith('.')) {
+        expression = expression.slice(0, -1);
+      }
+      console.log('[ServiceWorker] getTranslation:', expression);
+      return backend.findTerm(expression);
+    })
+  );
+
+  // Find term handler - alias for getTranslation
+  messageRouter.register(
+    MESSAGE_ACTIONS.FIND_TERM,
+    createHandler(MESSAGE_ACTIONS.FIND_TERM, async (params: { expression: string }) => {
+      console.log('[ServiceWorker] findTerm:', params.expression);
+      return backend.findTerm(params.expression);
+    })
+  );
 
   // Locale handler
   messageRouter.register(
@@ -316,6 +342,14 @@ function setupEventSubscriptions(ctx: BootstrapContext, backend: BackendService)
     // Initialize dictionaries after bootstrap
     try {
       await backend.initializeDictionaries();
+
+      // Save updated options (with dictNamelist) to storage
+      // so popup and options pages can access the dictionary list
+      const updatedOptions = backend.getOptions();
+      if (updatedOptions) {
+        await optionsManager.save(updatedOptions);
+        console.log('[ServiceWorker] Options saved with dictNamelist:', updatedOptions.dictNamelist?.length);
+      }
     } catch (error) {
       console.error('Failed to initialize dictionaries:', error);
     }
