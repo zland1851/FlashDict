@@ -1,127 +1,328 @@
+/* ODH Options Page - Modern Design */
+
+:root {
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --success: #10b981;
+  --success-hover: #059669;
+  --danger: #ef4444;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f1f5f9;
+  --border: #e2e8f0;
+  --border-focus: #93c5fd;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --radius: 8px;
+  --radius-lg: 12px;
+}
+
 * {
-    box-sizing: border-box;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-    font-family: "Segoe UI", Arial, "Microsoft Yahei", sans-serif;
-    font-size: 12px;
-    width: 440px;
-    border-radius: 8px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  background-color: var(--bg-secondary);
+  width: 480px;
+  min-height: 100vh;
 }
 
 .container {
-    margin: 0 auto;
+  padding: 16px;
 }
 
+/* Group Panel - Card Style */
 .grouppanel {
-    border-radius: 5px;
-    background-color: #f1f8e9;
-    margin: 5px 0;
-    padding: 0 0 3px;
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+  overflow: hidden;
 }
 
 .grouptitle {
-    font-weight: bold;
-    color: white;
-    background-color: #93a085;
-    border-radius: 5px 5px 0 0;
-    margin: 0 0 4px;
-    padding: 4px 15px;
-}
-
-.crosspanel {
-    padding: 0 6px;
-    width: 100%;
-}
-
-.leftpanel, .rightpanel {
-    padding: 0 6px;
-    float: left;
-    width: 50%;
-}
-
-.leftpanel {
-    border-right: 1px solid #e5e5e5;
-}
-
-.clearfix {
-    clear: both;
-}
-
-a {
-    text-decoration: none;
-}
-
-.option-helps {
-    float: right;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
 }
 
 .option-helps a {
-    color: white;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  text-decoration: none;
+  transition: all 0.2s;
 }
 
-label, input, select {
-    width: 95px;
-    padding: 4px;
-    margin: 3px;
-    display: inline-block;
-    color: black;
-    border: 1px solid #d5d5d5;
-    border-radius: 4px;
+.option-helps a:hover {
+  color: var(--primary);
+  border-color: var(--primary);
 }
 
+/* Panel Layouts */
+.crosspanel {
+  padding: 16px;
+  display: grid;
+  grid-template-columns: 120px 1fr auto;
+  gap: 12px;
+  align-items: center;
+}
+
+.leftpanel,
+.rightpanel {
+  padding: 16px;
+  float: left;
+  width: 50%;
+}
+
+.leftpanel {
+  border-right: 1px solid var(--border);
+}
+
+.clearfix {
+  clear: both;
+}
+
+/* Form Elements */
 label {
-    text-align: __MSG_labelAlignment__;
-    border-style: dashed;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  padding: 0;
+  margin: 0;
+  border: none;
+  display: block;
+  width: auto;
 }
 
+input[type="text"],
+input[type="password"],
+select {
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 14px;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+select {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+  background-position: right 8px center;
+  background-repeat: no-repeat;
+  background-size: 16px;
+  padding-right: 32px;
+  appearance: none;
+}
+
+/* Column widths */
 .col-2x {
-    width: 212px;
+  grid-column: span 2;
 }
 
 .col-3x {
-    width: 317px;
+  grid-column: 2 / -1;
 }
 
-.gifs {
-    display: inline-block;
-}
-
-.gif{
-    vertical-align: middle;
-}
-
+/* Buttons */
 .button {
-    text-align: center;
-    width: 95px;
-    background-color: #4CAF50;
-    color: white;
-    padding: 4px;
-    margin: 6px 3px 3px;
-    border: none;
-    cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: white;
+  background: var(--primary);
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+  text-decoration: none;
+  width: auto;
 }
 
 .button:hover {
-    background-color: #45a049;
+  background: var(--primary-hover);
 }
 
+.button:active {
+  transform: scale(0.98);
+}
+
+#saveload {
+  background: var(--success);
+}
+
+#saveload:hover {
+  background: var(--success-hover);
+}
+
+#close {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+#close:hover {
+  background: var(--border);
+}
+
+/* Status indicators */
+.gifs {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+}
+
+.gif {
+  display: none;
+}
+
+.gif img {
+  width: 20px;
+  height: 20px;
+}
+
+/* Horizontal rule */
 hr {
-    border: 1px;
-    margin: 4px 5px;
-    border-top: 1px solid #e5e5e5;
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 0;
 }
 
+/* Tab navigation override */
 div.tabmenus {
-    border-bottom: 1px solid #d5d5d5;
-    margin-bottom: 0 !important;
-    padding-bottom: 2px;
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0;
+  padding: 0;
+  display: flex;
 }
 
 a.tabmenu {
-    font-weight: bold;
+  flex: 1;
+  text-align: center;
+  padding: 14px 16px;
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+  margin: 0;
 }
 
+a.tabmenu:hover {
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+}
+
+a.tabmenu.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+  background: transparent;
+}
+
+/* Footer buttons area */
+.grouppannel {
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.grouppannel .leftpanel,
+.grouppannel .rightpanel {
+  border: none;
+  padding: 0;
+  float: none;
+  width: auto;
+  display: flex;
+  gap: 8px;
+}
+
+.grouppannel .leftpanel {
+  flex: 1;
+}
+
+/* Services status */
+#services-status {
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: 4px 8px;
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+}
+
+/* Hidden class */
 .hidden {
-    display: none;
+  display: none !important;
+}
+
+/* Responsive adjustments for panels */
+.leftpanel label,
+.rightpanel label {
+  margin-bottom: 4px;
+}
+
+.leftpanel select,
+.rightpanel select {
+  margin-bottom: 12px;
+}
+
+/* Anki field mapping grid */
+#anki-options .leftpanel,
+#anki-options .rightpanel {
+  display: flex;
+  flex-direction: column;
+}
+
+#anki-options .leftpanel label,
+#anki-options .rightpanel label {
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+#anki-options .leftpanel label:first-child,
+#anki-options .rightpanel label:first-child {
+  margin-top: 0;
 }

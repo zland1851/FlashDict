@@ -148,7 +148,7 @@ export const DEFAULT_OPTIONS: ExtensionOptions = {
   sentence: '',
   url: '',
   audio: '',
-  sysscripts: 'encn_Cambridge,encn_Collins,encn_Longman,encn_Oxford,encn_Vocabulary',
+  sysscripts: 'encn_Cambridge,encn_Collins,encn_LDOCE5MDX,encn_Oxford,encn_Youdao',
   udfscripts: '',
   dictSelected: '',
   dictNamelist: []
