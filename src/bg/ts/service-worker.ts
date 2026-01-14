@@ -58,31 +58,45 @@ let creatingOffscreen: Promise<void> | null = null;
  * are not fully available in @types/chrome
  */
 async function setupOffscreenDocument(path: string): Promise<void> {
-  const offscreenUrl = chrome.runtime.getURL(path);
+  console.log('[ServiceWorker] Setting up offscreen document:', path);
 
-  // Check if offscreen document already exists
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const existingContexts = await (chrome.runtime as any).getContexts({
-    contextTypes: ['OFFSCREEN_DOCUMENT'],
-    documentUrls: [offscreenUrl]
-  });
+  try {
+    const offscreenUrl = chrome.runtime.getURL(path);
+    console.log('[ServiceWorker] Offscreen URL:', offscreenUrl);
 
-  if (existingContexts && existingContexts.length > 0) {
-    return;
-  }
-
-  // Create offscreen document (avoid concurrency issues)
-  if (creatingOffscreen) {
-    await creatingOffscreen;
-  } else {
+    // Check if offscreen document already exists
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    creatingOffscreen = (chrome as any).offscreen.createDocument({
-      url: path,
-      reasons: ['CLIPBOARD'],
-      justification: 'ODH needs offscreen document for dictionary sandbox and audio playback'
+    const existingContexts = await (chrome.runtime as any).getContexts({
+      contextTypes: ['OFFSCREEN_DOCUMENT'],
+      documentUrls: [offscreenUrl]
     });
-    await creatingOffscreen;
-    creatingOffscreen = null;
+
+    console.log('[ServiceWorker] Existing contexts:', existingContexts?.length ?? 0);
+
+    if (existingContexts && existingContexts.length > 0) {
+      console.log('[ServiceWorker] Offscreen document already exists');
+      return;
+    }
+
+    // Create offscreen document (avoid concurrency issues)
+    if (creatingOffscreen) {
+      console.log('[ServiceWorker] Waiting for existing offscreen creation...');
+      await creatingOffscreen;
+    } else {
+      console.log('[ServiceWorker] Creating offscreen document...');
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      creatingOffscreen = (chrome as any).offscreen.createDocument({
+        url: path,
+        reasons: ['IFRAME_SCRIPTING', 'AUDIO_PLAYBACK'],
+        justification: 'ODH needs offscreen document for dictionary sandbox and audio playback'
+      });
+      await creatingOffscreen;
+      creatingOffscreen = null;
+      console.log('[ServiceWorker] Offscreen document created successfully');
+    }
+  } catch (error) {
+    console.error('[ServiceWorker] Failed to setup offscreen document:', error);
+    throw error;
   }
 }
 
@@ -152,26 +166,8 @@ function registerAdditionalHandlers(ctx: BootstrapContext, backend: BackendServi
     })
   );
 
-  // Get translation handler
-  messageRouter.register(
-    MESSAGE_ACTIONS.GET_TRANSLATION,
-    createHandler(MESSAGE_ACTIONS.GET_TRANSLATION, async (params: { expression: string }) => {
-      let expression = params.expression;
-      // Fix trailing period issue
-      if (expression.endsWith('.')) {
-        expression = expression.slice(0, -1);
-      }
-      return backend.findTerm(expression);
-    })
-  );
-
-  // Find term handler (alias for getTranslation)
-  messageRouter.register(
-    MESSAGE_ACTIONS.FIND_TERM,
-    createHandler(MESSAGE_ACTIONS.FIND_TERM, async (params: { expression: string }) => {
-      return backend.findTerm(params.expression);
-    })
-  );
+  // Note: getTranslation and findTerm are already registered by HandlerRegistry in bootstrap
+  // They use the DictionaryHandler which delegates to the sandbox
 
   // Locale handler
   messageRouter.register(

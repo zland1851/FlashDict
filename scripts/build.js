@@ -109,6 +109,36 @@ function compileTypeScript() {
 }
 
 /**
+ * Bundle service worker with esbuild
+ * Chrome extension ES modules require .js extensions in imports,
+ * so we bundle everything into a single file
+ */
+function bundleServiceWorker() {
+  console.log('📦 Bundling service worker...');
+  try {
+    const esbuild = require('esbuild');
+
+    esbuild.buildSync({
+      entryPoints: [path.join(SRC_DIR, 'bg/ts/service-worker.ts')],
+      bundle: true,
+      outfile: path.join(DIST_DIR, 'bg/ts/service-worker.js'),
+      format: 'esm',
+      platform: 'browser',
+      target: 'es2020',
+      sourcemap: true,
+      minify: false,
+      // Don't bundle chrome API - it's provided by the browser
+      external: [],
+    });
+
+    console.log('✅ Service worker bundled\n');
+  } catch (error) {
+    console.error('❌ Service worker bundling failed:', error.message);
+    process.exit(1);
+  }
+}
+
+/**
  * Copies static files to dist
  */
 function copyStaticFiles() {
@@ -181,6 +211,7 @@ function build() {
   try {
     clean();
     compileTypeScript();
+    bundleServiceWorker();
     copyStaticFiles();
 
     const duration = ((Date.now() - startTime) / 1000).toFixed(2);

@@ -1,22 +1,31 @@
 /* global Agent */
 class ODHBackground {
     constructor() {
+        console.log('[ODH Offscreen] Initializing ODHBackground...');
         this.audios = {};
         this.agent = null;
         // Wait for iframe to load before initializing agent
         const iframe = document.getElementById('sandbox');
+        console.log('[ODH Offscreen] Sandbox iframe:', iframe);
         if (iframe) {
             iframe.addEventListener('load', () => {
+                console.log('[ODH Offscreen] Sandbox iframe loaded');
                 this.agent = new Agent(iframe.contentWindow);
+                console.log('[ODH Offscreen] Agent initialized');
             });
             // If iframe is already loaded, initialize immediately
             if (iframe.contentWindow && iframe.contentWindow.document.readyState === 'complete') {
+                console.log('[ODH Offscreen] Sandbox iframe already loaded');
                 this.agent = new Agent(iframe.contentWindow);
+                console.log('[ODH Offscreen] Agent initialized (immediate)');
             }
+        } else {
+            console.error('[ODH Offscreen] Sandbox iframe not found!');
         }
         // add listener
         chrome.runtime.onMessage.addListener(this.onServiceMessage.bind(this));
         window.addEventListener('message', e => this.onSandboxMessage(e));
+        console.log('[ODH Offscreen] Message listeners registered');
     }
 
     playAudio(url) {
@@ -34,9 +43,17 @@ class ODHBackground {
     // message from service worker to sandbox
     onServiceMessage(request, sender, sendResponse) {
         const { action, params, target } = request;
+
+        // Handle sandboxPing - check if sandbox agent is ready
+        if (action === 'sandboxPing') {
+            console.log('[ODH Offscreen] sandboxPing received, agent ready:', this.agent !== null);
+            sendResponse({ ready: this.agent !== null });
+            return true;
+        }
+
         if (target != 'background')
             return false;
-        
+
         if (action == 'playAudio') {
             let { url } = params
             this.playAudio(url)
@@ -140,3 +157,4 @@ class ODHBackground {
 }
 
 window.odhbackground = new ODHBackground();
+console.log('[ODH Offscreen] Background script loaded');
