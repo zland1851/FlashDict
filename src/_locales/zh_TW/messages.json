@@ -1,7 +1,7 @@
 {
-    "appName": { "message": "在線詞典助手" },
-    "appDesc": { "message": "顯示在線詞典內容的彈窗助手(支持Anki制卡)" },
-    "optTitle": { "message": "在線詞典助手" },
+    "appName": { "message": "FlashDict" },
+    "appDesc": { "message": "網頁劃詞查詢，一鍵創建Anki卡片" },
+    "optTitle": { "message": "FlashDict" },
 
     "tabExtensionTitle": { "message": "插件選項" },
     "tabServicesTitle": { "message": "輸出選項" },

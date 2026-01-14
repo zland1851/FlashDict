@@ -1,10 +1,10 @@
-# ODH - Online Dictionary Helper
+# FlashDict
 
 ## Specification
 
 ### Purpose
 
-ODH (Online Dictionary Helper) is a Chrome browser extension that enables users to:
+FlashDict is a Chrome browser extension that enables users to:
 1. Look up word definitions by selecting text on any webpage
 2. Create Anki flashcards from dictionary definitions
 3. Use multiple dictionary sources (builtin and online)

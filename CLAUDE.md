@@ -1,10 +1,10 @@
 # CLAUDE.md - Claude Code Configuration
 
-This file provides guidance to Claude Code when working with the ODH (Online Dictionary Helper) codebase.
+This file provides guidance to Claude Code when working with the FlashDict codebase.
 
 ## Project Overview
 
-ODH is a Chrome extension for looking up words in online dictionaries and creating Anki flashcards. It uses Manifest V3 with a TypeScript service worker architecture.
+FlashDict is a Chrome extension for looking up words in online dictionaries and creating Anki flashcards. It uses Manifest V3 with a TypeScript service worker architecture.
 
 ## Tech Stack
 

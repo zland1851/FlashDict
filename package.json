@@ -1,7 +1,7 @@
 {
-  "name": "odh-extension",
-  "version": "1.0.7",
-  "description": "Online Dictionary Helper - Chrome Extension",
+  "name": "flashdict",
+  "version": "1.0.8",
+  "description": "FlashDict - Look up words and create Anki flashcards",
   "scripts": {
     "build": "node scripts/build.js",
     "build:tsc": "tsc --build",

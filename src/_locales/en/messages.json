@@ -1,7 +1,7 @@
 {
-    "appName": { "message": "Online Dictionary Helper" },
-    "appDesc": { "message": "A translation popup tool to show online dictionary content (with anki support)" },
-    "optTitle": { "message": "Online Dictionary Helper" },
+    "appName": { "message": "FlashDict" },
+    "appDesc": { "message": "Look up words and create Anki flashcards from any webpage" },
+    "optTitle": { "message": "FlashDict" },
 
     "tabExtensionTitle": { "message": "Extension Options" },
     "tabServicesTitle": { "message": "Services Options" },

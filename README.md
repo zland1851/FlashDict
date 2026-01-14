@@ -1,8 +1,8 @@
-# Online Dictionary Helper (ODH)
+# FlashDict
 
 [[中文版说明](README.zh_CN.md)]
 
-A Chrome extension for looking up word definitions and creating Anki flashcards.
+A Chrome extension for looking up word definitions and creating Anki flashcards from any webpage.
 
 ![Anki Notes](https://raw.githubusercontent.com/ninja33/ODH/master/doc/img/anki_001_640x400.png)
 

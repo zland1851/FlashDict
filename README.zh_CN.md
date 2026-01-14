@@ -1,8 +1,8 @@
-# 在线词典助手 (ODH)
+# FlashDict
 
 [[English](README.md)]
 
-Chrome浏览器扩展，用于查词和创建Anki卡片。
+Chrome浏览器扩展，网页划词查询，一键创建Anki卡片。
 
 ![Anki Notes](https://raw.githubusercontent.com/ninja33/ODH/master/doc/img/anki_001_640x400.png)
 
