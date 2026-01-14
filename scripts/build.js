@@ -43,6 +43,9 @@ const COPY_PATTERNS = [
   // Sandbox files
   { from: 'bg/sandbox', to: 'bg/sandbox' },
 
+  // Builtin dictionary data (Collins, wordforms)
+  { from: 'bg/data', to: 'bg/data' },
+
   // Frontend CSS files
   { from: 'fg/css', to: 'fg/css' },
   { from: 'fg/font', to: 'fg/font' },

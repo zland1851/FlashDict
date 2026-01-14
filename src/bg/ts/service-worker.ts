@@ -23,6 +23,8 @@ import { createHandler } from './core/MessageRouter';
 import type { MessageSender } from './interfaces/IMessageHandler';
 import type { ExtensionOptions } from './interfaces/IOptionsStore';
 import type { NoteDefinition } from './services/NoteFormatterService';
+import { createBuiltin, Builtin } from './utils/builtin';
+import { createDeinflector, Deinflector } from './utils/deinflector';
 
 /**
  * Service Worker configuration
@@ -46,6 +48,8 @@ const DEFAULT_CONFIG: Required<ServiceWorkerConfig> = {
 let context: BootstrapContext | null = null;
 let backendService: BackendService | null = null;
 let isInitialized = false;
+let builtin: Builtin | null = null;
+let deinflector: Deinflector | null = null;
 
 /**
  * Offscreen document management
@@ -182,10 +186,20 @@ function registerAdditionalHandlers(ctx: BootstrapContext, backend: BackendServi
     MESSAGE_ACTIONS.FETCH,
     createHandler(MESSAGE_ACTIONS.FETCH, async (params: { url: string }) => {
       try {
+        let url = params.url;
+
+        // Convert relative URLs to absolute extension URLs
+        // Service workers cannot use relative URLs directly
+        if (url.startsWith('/')) {
+          url = chrome.runtime.getURL(url);
+        }
+
+        console.log('[ServiceWorker] Fetching:', url);
+
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-        const response = await fetch(params.url, {
+        const response = await fetch(url, {
           method: 'GET',
           signal: controller.signal
         });
@@ -201,6 +215,34 @@ function registerAdditionalHandlers(ctx: BootstrapContext, backend: BackendServi
         console.error('Fetch error:', error);
         return null;
       }
+    })
+  );
+
+  // Builtin dictionary handler (for Collins, etc.)
+  messageRouter.register(
+    MESSAGE_ACTIONS.GET_BUILTIN,
+    createHandler(MESSAGE_ACTIONS.GET_BUILTIN, async (params: { dict: string; word: string }) => {
+      if (!builtin) {
+        console.warn('[ServiceWorker] Builtin not initialized');
+        return null;
+      }
+      const result = builtin.findTerm(params.dict, params.word);
+      console.log(`[ServiceWorker] getBuiltin(${params.dict}, ${params.word}):`, result ? 'found' : 'not found');
+      return result;
+    })
+  );
+
+  // Deinflect handler (word form stemming)
+  messageRouter.register(
+    MESSAGE_ACTIONS.DEINFLECT,
+    createHandler(MESSAGE_ACTIONS.DEINFLECT, async (params: { word: string }) => {
+      if (!deinflector) {
+        console.warn('[ServiceWorker] Deinflector not initialized');
+        return null;
+      }
+      const result = deinflector.deinflect(params.word);
+      console.log(`[ServiceWorker] Deinflect(${params.word}):`, result);
+      return result;
     })
   );
 }
@@ -306,6 +348,28 @@ async function initialize(config: ServiceWorkerConfig = {}): Promise<void> {
     // Setup offscreen document first
     await setupOffscreenDocument(finalConfig.offscreenDocumentPath);
     log('Offscreen document ready');
+
+    // Initialize builtin dictionary and deinflector
+    builtin = createBuiltin();
+    deinflector = createDeinflector({
+      dataPath: 'bg/data/wordforms.json'
+    });
+
+    // Load builtin data (Collins dictionary)
+    try {
+      await builtin.loadData();
+      log(`Builtin loaded: ${builtin.getTermCount('collins')} terms`);
+    } catch (error) {
+      console.warn('[ServiceWorker] Failed to load builtin data:', error);
+    }
+
+    // Load deinflector data (word forms)
+    try {
+      await deinflector.loadData();
+      log('Deinflector loaded');
+    } catch (error) {
+      console.warn('[ServiceWorker] Failed to load deinflector data:', error);
+    }
 
     // Bootstrap the application
     context = bootstrap({
