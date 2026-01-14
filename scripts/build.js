@@ -37,8 +37,7 @@ const COPY_PATTERNS = [
   { from: 'bg/update.html', to: 'bg/update.html' },
   { from: 'bg/guide.html', to: 'bg/guide.html' },
 
-  // Background JS files (legacy, will be replaced by TS gradually)
-  { from: 'bg/background.js', to: 'bg/background.js' },
+  // Background JS files (remaining legacy for UI and offscreen document)
   { from: 'bg/js', to: 'bg/js' },
 
   // Sandbox files

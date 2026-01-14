@@ -18,7 +18,8 @@
     },
     "author": "Zhenyu Huang",
     "background": {
-        "service_worker": "bg/background.js"
+        "service_worker": "bg/ts/service-worker.js",
+        "type": "module"
     },
     "content_scripts": [{
         "matches": ["*://*/*", "file://*/*"],
