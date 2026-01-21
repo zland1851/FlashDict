@@ -7,9 +7,10 @@ const fs = require('fs');
 
 /**
  * Get the extension path
+ * Uses dist directory for built extension (E2E tests require compiled JS)
  */
 function getExtensionPath() {
-    return path.resolve(__dirname, '../../src');
+    return path.resolve(__dirname, '../../dist');
 }
 
 /**

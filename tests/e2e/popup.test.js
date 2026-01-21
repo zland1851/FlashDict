@@ -75,19 +75,19 @@ describe('Popup Functionality', () => {
         expect(dictListExists).toBe(true);
     });
 
-    test('should have options link', async () => {
-        await waitFor(() => 
+    test('should have options trigger element', async () => {
+        await waitFor(() =>
             popupPage.evaluate(() => typeof $ !== 'undefined')
         );
 
-        const hasOptionsLink = await popupPage.evaluate(() => {
-            const links = Array.from(document.querySelectorAll('a'));
-            return links.some(link => 
-                link.href.includes('options.html') || 
-                link.textContent.toLowerCase().includes('option')
-            );
+        const hasOptionsTrigger = await popupPage.evaluate(() => {
+            // The popup uses a "more" span to open options page
+            const moreElement = document.getElementById('more');
+            // Also check for title containing "Options"
+            const optionsTitle = document.querySelector('[data-i18n="baTitle"]');
+            return moreElement !== null || (optionsTitle && optionsTitle.textContent.includes('Option'));
         });
 
-        expect(hasOptionsLink).toBe(true);
+        expect(hasOptionsTrigger).toBe(true);
     });
 });

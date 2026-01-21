@@ -1,15 +1,40 @@
 import type { Config } from 'jest';
 
 const config: Config = {
-  preset: 'ts-jest',
-  testEnvironment: 'jsdom',
-  roots: ['<rootDir>/tests'],
-  setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
-  moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/src/$1',
-    '^@bg/(.*)$': '<rootDir>/src/bg/ts/$1',
-    '^@fg/(.*)$': '<rootDir>/src/fg/ts/$1'
-  },
+  // Use projects to separate unit tests (jsdom) from E2E tests (node)
+  projects: [
+    // Unit tests - use jsdom environment for DOM testing
+    {
+      displayName: 'unit',
+      preset: 'ts-jest',
+      testEnvironment: 'jsdom',
+      roots: ['<rootDir>/tests/unit'],
+      setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
+      moduleNameMapper: {
+        '^@/(.*)$': '<rootDir>/src/$1',
+        '^@bg/(.*)$': '<rootDir>/src/bg/ts/$1',
+        '^@fg/(.*)$': '<rootDir>/src/fg/ts/$1'
+      },
+      testMatch: ['**/*.test.ts'],
+      transform: {
+        '^.+\\.ts$': ['ts-jest', {
+          tsconfig: 'tsconfig.json'
+        }]
+      },
+      moduleFileExtensions: ['ts', 'js', 'json'],
+    },
+    // E2E tests - use node environment for Puppeteer
+    {
+      displayName: 'e2e',
+      testEnvironment: 'node',
+      roots: ['<rootDir>/tests/e2e'],
+      testMatch: ['**/*.test.js'],
+      transform: {
+        '^.+\\.js$': 'babel-jest'
+      },
+      moduleFileExtensions: ['js', 'json'],
+    }
+  ],
   collectCoverageFrom: [
     'src/**/*.ts',
     '!src/lib/**',
@@ -28,20 +53,8 @@ const config: Config = {
       statements: 80
     }
   },
-  testMatch: [
-    '**/*.test.ts',
-    '**/*.test.js'
-  ],
-  transform: {
-    '^.+\\.ts$': ['ts-jest', {
-      tsconfig: 'tsconfig.json'
-    }],
-    '^.+\\.js$': 'babel-jest'
-  },
-  moduleFileExtensions: ['ts', 'js', 'json'],
   verbose: true,
   testTimeout: 30000,
-  // Allow existing JS tests to run alongside new TS tests
   transformIgnorePatterns: [
     '/node_modules/',
     '\\.pnp\\.[^\\/]+$'

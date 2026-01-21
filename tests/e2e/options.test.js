@@ -57,21 +57,24 @@ describe('Options Page Functionality', () => {
         expect(hasContent).toBe(true);
     });
 
-    test('should save and load settings', async () => {
-        await waitFor(() => 
+    test('should have save and load controls', async () => {
+        await waitFor(() =>
             optionsPage.evaluate(() => typeof $ !== 'undefined')
         );
 
         // Wait for options page to initialize
         await new Promise(resolve => setTimeout(resolve, 2000));
 
-        // Test that options can be saved
+        // Test that save controls exist (using label.button pattern)
         const saveButtonExists = await optionsPage.evaluate(() => {
-            const buttons = Array.from(document.querySelectorAll('button, input[type="button"]'));
-            return buttons.some(btn => 
-                btn.textContent.toLowerCase().includes('save') ||
-                btn.value.toLowerCase().includes('save')
+            // Check for the saveload button (label with class button)
+            const saveloadBtn = document.getElementById('saveload');
+            // Also check for any label with button class containing save text
+            const labelButtons = Array.from(document.querySelectorAll('label.button'));
+            const hasSaveLabel = labelButtons.some(btn =>
+                btn.textContent.toLowerCase().includes('save')
             );
+            return saveloadBtn !== null || hasSaveLabel;
         });
 
         expect(saveButtonExists).toBe(true);
