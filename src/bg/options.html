@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="css/tabmenu.css">
     <link rel="stylesheet" href="css/checkbox.css">
     <link rel="stylesheet" href="css/scriptlist.css">
@@ -59,42 +60,47 @@
                     <div class="grouptitle">
                         <span data-i18n="grpDictionary">Dictionary Options</span>
                     </div>
-                    <div class="crosspanel">
+                    
+                    <div class="grid-2-col">
                         <label for="dict" data-i18n="lblCurrentDict">Dictionary</label>
-                        <select id="dict" class="col-3x">
+                        <select id="dict">
                             <option value="encn-Default">encn-Default</option>
                         </select>
                     </div>
-                    <hr>
-                    <div class="leftpanel">
-                        <label data-i18n="lblLingualType">Mono/Bilingual Dict.</label>
-                        <select id="monolingual">
-                            <option value="0" data-i18n="selBilingual">Bilingual</option>
-                            <option value="1" data-i18n="selMonolingual">Monolingual</option>
-                        </select>
-                        <label data-i18n="lblAudioPref">Pref. Audio</label>
-                        <select id="anki-preferred-audio">
-                            <option value="0" data-i18n="lblAudioPref0">#0</option>
-                            <option value="1" data-i18n="lblAudioPref1">#1</option>
-                        </select>
+
+                    <div class="grid-cols">
+                        <div class="col-panel">
+                            <div class="section-title">Behaviors</div>
+                            <label data-i18n="lblLingualType">Mono/Bilingual Dict.</label>
+                            <select id="monolingual">
+                                <option value="0" data-i18n="selBilingual">Bilingual</option>
+                                <option value="1" data-i18n="selMonolingual">Monolingual</option>
+                            </select>
+                            <label data-i18n="lblAudioPref">Pref. Audio</label>
+                            <select id="anki-preferred-audio">
+                                <option value="0" data-i18n="lblAudioPref0">#0</option>
+                                <option value="1" data-i18n="lblAudioPref1">#1</option>
+                            </select>
+                        </div>
+                        <div class="col-panel">
+                            <div class="section-title">Content Limits</div>
+                            <label data-i18n="lblMaxContext">Max. Context #</label>
+                            <select id="maxcontext">
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                            </select>
+                            <label data-i18n="lblMaxExample">Max. Example #</label>
+                            <select id="maxexample">
+                                <option value="0">0</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                            </select>
+                        </div>
                     </div>
-                    <div class="rightpanel">
-                        <label data-i18n="lblMaxContext">Max. Context #</label>
-                        <select id="maxcontext">
-                            <option value="1">1</option>
-                            <option value="2">2</option>
-                            <option value="3">3</option>
-                        </select>
-                        <label data-i18n="lblMaxExample">Max. Example #</label>
-                        <select id="maxexample">
-                            <option value="0">0</option>
-                            <option value="1">1</option>
-                            <option value="2">2</option>
-                        </select>
-                    </div>
-                    <div class="clearfix"></div>
                 </div>
             </div>
+            
             <div id="tab-2" class="tabcontent" style="display:none">
                 <div class="grouppanel anki-panel">
                     <div class="grouptitle">
@@ -197,15 +203,16 @@
                     </div>
                 </div>
             </div>
+            
             <div id="tab-3" class="tabcontent" style="display:none">
                 <div class="grouppanel">
                     <div class="grouptitle">
                         <span data-i18n="grpUdfScripts">User-Defined Script</span>
                         <span class="option-helps"><a href="https://github.com/zland1851/FlashDict/blob/master/doc/development.md" target="_blank">?</a></span>
                     </div>
-                    <div class="crosspanel">
+                    <div class="grid-2-col">
                         <label data-i18n="lblUdfScripts">UDF Scripts Name</label>
-                        <input type="text" id="udfscripts" placeholder="http(s)://your_host.com/your_script.js" class="col-3x">
+                        <input type="text" id="udfscripts" placeholder="http(s)://your_host.com/your_script.js">
                     </div>
                 </div>
                 <div class="grouppanel">
@@ -213,11 +220,11 @@
                         <span data-i18n="grpSysScripts">System Script</span>
                         <span class="option-helps"><a id="hidden" href="#">…</a></span>
                     </div>
-                    <div class="crosspanel" style="display:none">
+                    <div class="grid-2-col" style="display:none">
                         <label data-i18n="lblSysScripts">SYS Scripts Name</label>
-                        <input type="text" id="sysscripts" placeholder="System Scripts" class="col-3x">
+                        <input type="text" id="sysscripts" placeholder="System Scripts">
                     </div>
-                    <div class="crosspanel">
+                    <div class="grid-2-col col-3x" style="display:block">
                         <div id="scriptslisthead" class="sl-head">
                             <span class="sl-col sl-col-onoff" data-i18n="lstOnoff">OnOff</span><span class="sl-col sl-col-cloud hidden" data-i18n="lstCloud">Cloud</span><span class="sl-col sl-col-name" data-i18n="lstName">Script Name</span><span class="sl-col sl-col-description" data-i18n="lstDescription">Script Description</span>
                         </div>
@@ -228,22 +235,18 @@
                 </div>
             </div>
         </form>
-        <hr>
-        <div class="grouppannel">
-            <div class="leftpanel" style="border-right:initial">
-                <!-- Hidden for now: Load Scripts button -->
-                <label class="button" id="saveload" data-i18n="btnSaveLoad" style="display:none">Save and Load</label>
-                <div class="gifs">
-                    <span class="gif" id="gif-load"><img src="/fg/img/load.gif" alt=""></span>
-                    <span class="gif" id="gif-good"><img src="/fg/img/good.png" alt=""></span>
-                    <span class="gif" id="gif-fail"><img src="/fg/img/fail.png" alt=""></span>
-                </div>
+        
+        <div class="footer-panel">
+            <div class="gifs">
+                <span class="gif" id="gif-load"><img src="/fg/img/load.gif" alt=""></span>
+                <span class="gif" id="gif-good"><img src="/fg/img/good.png" alt=""></span>
+                <span class="gif" id="gif-fail"><img src="/fg/img/fail.png" alt=""></span>
             </div>
-            <div class="rightpanel">
-                <label class="button" id="saveclose" data-i18n="btnSaveClose">Save and Close</label>
-                <label class="button" id="close" data-i18n="btnClose">Close</label>
-            </div>
-            <div class="clearfix"></div>
+            <!-- Hidden load button kept for potential logic -->
+            <label class="button" id="saveload" data-i18n="btnSaveLoad" style="display:none">Save and Load</label>
+            
+            <label class="button" id="saveclose" data-i18n="btnSaveClose">Save and Close</label>
+            <label class="button" id="close" data-i18n="btnClose">Close</label>
         </div>
     </div>
 
