@@ -200,7 +200,6 @@ function bundleFrontendScripts() {
     // Frontend entry points
     const frontendEntryPoints = [
       { entry: 'fg/ts/api.ts', out: 'fg/js/api.js' },
-      { entry: 'fg/ts/text.ts', out: 'fg/js/text.js' },
       { entry: 'fg/ts/range.ts', out: 'fg/js/range.js' },
       { entry: 'fg/ts/spell.ts', out: 'fg/js/spell.js' },
       { entry: 'fg/ts/frame.ts', out: 'fg/js/frame.js' },

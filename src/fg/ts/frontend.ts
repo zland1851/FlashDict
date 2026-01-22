@@ -4,7 +4,7 @@
 
 import { Popup } from './popup.js';
 import { rangeFromPoint, TextSourceRange } from './range.js';
-import { selectedText, isEmpty, getSentence, isValidElement } from './text.js';
+import { selectedText, isEmpty, getSentence, isValidElement } from './utils/text.js';
 import { isConnected, addNote, getTranslation, playAudio } from './api.js';
 
 interface Point {
@@ -72,7 +72,11 @@ class ODHFront {
     if (!this.activateKey) return;
     if (!isValidElement()) return;
 
-    if (this.enabled && this.point !== null && (e.keyCode === this.activateKey || e.charCode === this.activateKey)) {
+    if (
+      this.enabled &&
+      this.point !== null &&
+      (e.keyCode === this.activateKey || e.charCode === this.activateKey)
+    ) {
       const range = rangeFromPoint(this.point);
       if (range === null) return;
       const textSource = new TextSourceRange(range);
@@ -105,7 +109,7 @@ class ODHFront {
     this.mousemoved = true;
     this.point = {
       x: e.clientX,
-      y: e.clientY
+      y: e.clientY,
     };
   }
 
@@ -157,7 +161,10 @@ class ODHFront {
     callback();
   }
 
-  private api_setFrontendOptions(params: { options: ExtensionOptions; callback?: () => void }): void {
+  private api_setFrontendOptions(params: {
+    options: ExtensionOptions;
+    callback?: () => void;
+  }): void {
     const { options, callback } = params;
     this.options = options;
     this.enabled = options.enabled;
@@ -184,7 +191,11 @@ class ODHFront {
     }
   }
 
-  private async api_addNote(params: { nindex: number; dindex: number; context: string }): Promise<void> {
+  private async api_addNote(params: {
+    nindex: number;
+    dindex: number;
+    context: string;
+  }): Promise<void> {
     const { nindex, dindex, context } = params;
 
     if (!this.notes || !this.notes[nindex]) return;
@@ -224,7 +235,7 @@ class ODHFront {
 
   private buildNote(result: unknown): NoteDefinition[] {
     const expression = selectedText();
-    const sentence = getSentence(this.maxContext);
+    const sentence = getSentence(this.maxContext) ?? '';
     this.sentence = sentence;
 
     const tmpl: NoteDefinition = {
@@ -233,9 +244,9 @@ class ODHFront {
       reading: '',
       extrainfo: '',
       definitions: [],
-      sentence,
+      sentence: sentence,
       url: '',
-      audios: []
+      audios: [],
     };
 
     if (Array.isArray(result)) {
@@ -286,9 +297,10 @@ class ODHFront {
         </div>`;
 
       for (const [dindex, definition] of note.definitions.entries()) {
-        const button = currentServices === 'none' || currentServices === ''
-          ? ''
-          : `<img ${imageclass} data-nindex="${nindex}" data-dindex="${dindex}" src="${chrome.runtime.getURL('fg/img/' + image)}" />`;
+        const button =
+          currentServices === 'none' || currentServices === ''
+            ? ''
+            : `<img ${imageclass} data-nindex="${nindex}" data-dindex="${dindex}" src="${chrome.runtime.getURL('fg/img/' + image)}" />`;
         content += `<div class="odh-definition">${button}${definition}</div>`;
       }
       content += '</div>';

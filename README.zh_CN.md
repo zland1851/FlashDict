@@ -77,11 +77,10 @@ npm run build:tsc      # 仅类型检查
 ### 项目结构
 ```
 src/
-├── bg/                 # 后台/Service Worker（TypeScript）
-│   ├── ts/            # TypeScript源码
-│   ├── js/            # 旧版JavaScript
+├── bg/                 # 后台/Service Worker
+│   ├── ts/            # TypeScript源码 (100%)
 │   └── sandbox/       # 词典沙箱
-├── fg/                 # 前端（内容脚本）
+├── fg/                 # 前端（内容脚本，TypeScript）
 └── dict/              # 词典脚本
 ```
 
@@ -99,4 +98,4 @@ src/
 
 ## 许可证
 
-GPL-3.0
+MIT License

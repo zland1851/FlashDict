@@ -76,11 +76,10 @@ npm run build:tsc      # Type check only
 ### Project Structure
 ```
 src/
-├── bg/                 # Background/service worker (TypeScript)
-│   ├── ts/            # TypeScript source
-│   ├── js/            # Legacy JavaScript
+├── bg/                 # Background/service worker
+│   ├── ts/            # TypeScript source (100%)
 │   └── sandbox/       # Dictionary sandbox
-├── fg/                 # Frontend (content scripts)
+├── fg/                 # Frontend (content scripts, TypeScript)
 └── dict/              # Dictionary scripts
 ```
 
