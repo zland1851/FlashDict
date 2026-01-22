@@ -40,7 +40,7 @@ Chrome浏览器扩展，网页划词查询，一键创建Anki卡片。
 - 原句（Sentence）
 - 来源（URL）
 
-需要安装 [Anki](https://apps.ankiweb.net/) 桌面版和 [AnkiConnect](https://github.com/FooSoft/anki-connect) 插件，或使用AnkiWeb账户。
+需要安装 [Anki](https://apps.ankiweb.net/) 桌面版和 [AnkiConnect](https://git.sr.ht/~foosoft/anki-connect) 插件，或使用AnkiWeb账户。
 
 ### 词典选项
 - 选择内置词典（Collins英中词典）

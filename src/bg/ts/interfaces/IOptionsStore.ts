@@ -137,7 +137,7 @@ export const DEFAULT_OPTIONS: ExtensionOptions = {
   id: '',
   password: '',
   duplicate: '1',
-  tags: 'ODH',
+  tags: 'FlashDict',
   deckname: 'Default',
   typename: 'Basic',
   expression: 'Front',

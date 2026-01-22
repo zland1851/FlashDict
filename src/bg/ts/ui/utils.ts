@@ -50,7 +50,7 @@ const DEFAULT_OPTIONS: ExtensionOptions = {
   id: '',
   password: '',
   duplicate: '1', // 0: not allowed, 1: allowed
-  tags: 'ODH',
+  tags: 'FlashDict',
   deckname: 'Default',
   typename: 'Basic',
   expression: 'Front',
@@ -61,10 +61,11 @@ const DEFAULT_OPTIONS: ExtensionOptions = {
   sentence: '',
   url: '',
   audio: '',
-  sysscripts: 'builtin_encn_Collins,encn_Collins,encn_Cambridge,encn_Oxford,fren_Cambridge,esen_Spanishdict,decn_Eudict,escn_Eudict,frcn_Eudict',
+  sysscripts:
+    'builtin_encn_Collins,encn_Collins,encn_Cambridge,encn_Oxford,fren_Cambridge,esen_Spanishdict,decn_Eudict,escn_Eudict,frcn_Eudict',
   udfscripts: '',
   dictSelected: '',
-  dictNamelist: []
+  dictNamelist: [],
 };
 
 /**
@@ -157,8 +158,8 @@ export function odhback(): OdhBackend {
       sendMessageToSW('opt_optionsChanged', { options }),
     ankiweb: {
       initConnection: (options: ExtensionOptions, forceLogout: boolean) =>
-        sendMessageToSW('ankiweb_initConnection', { options, forceLogout })
-    }
+        sendMessageToSW('ankiweb_initConnection', { options, forceLogout }),
+    },
   };
 }
 
@@ -184,7 +185,7 @@ export async function setupOffscreenDocument(path: string): Promise<void> {
   const offscreenUrl = chrome.runtime.getURL(path);
   const existingContexts = await chrome.runtime.getContexts({
     contextTypes: [chrome.runtime.ContextType.OFFSCREEN_DOCUMENT],
-    documentUrls: [offscreenUrl]
+    documentUrls: [offscreenUrl],
   });
 
   if (existingContexts.length > 0) {
@@ -197,9 +198,22 @@ export async function setupOffscreenDocument(path: string): Promise<void> {
     creating = chrome.offscreen.createDocument({
       url: path,
       reasons: [chrome.offscreen.Reason.CLIPBOARD],
-      justification: 'ODH needs offscreen document to maintain sandbox page for dictionary scripts execution'
+      justification:
+        'ODH needs offscreen document to maintain sandbox page for dictionary scripts execution',
     });
     await creating;
     creating = null;
   }
 }
+
+// Expose functions globally for use by other scripts (options.js, popup.js)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(window as any).odhback = odhback;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(window as any).optionsLoad = optionsLoad;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(window as any).optionsSave = optionsSave;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(window as any).localizeHtmlPage = localizeHtmlPage;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(window as any).utilAsync = utilAsync;

@@ -36,7 +36,7 @@
         "page": "bg/options.html"
     },
     "permissions": ["webRequest", "storage", "offscreen"],
-    "host_permissions": ["https://ankiweb.net/*", "https://ankiuser.net/*"],
+    "host_permissions": ["https://ankiweb.net/*", "https://ankiuser.net/*", "http://127.0.0.1:8765/*", "http://localhost:8765/*"],
     "sandbox": {
         "pages": ["bg/sandbox/sandbox.html"]
     },

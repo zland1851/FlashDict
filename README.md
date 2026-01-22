@@ -39,7 +39,7 @@ Configure deck name, note type, and field mappings for:
 - Sentence (context)
 - URL (source page)
 
-Requires [Anki](https://apps.ankiweb.net/) desktop with [AnkiConnect](https://github.com/FooSoft/anki-connect) addon, or an AnkiWeb account.
+Requires [Anki](https://apps.ankiweb.net/) desktop with [AnkiConnect](https://git.sr.ht/~foosoft/anki-connect) addon, or an AnkiWeb account.
 
 ### Dictionary Options
 - Select from builtin dictionaries (Collins EN→CN)

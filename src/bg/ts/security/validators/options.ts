@@ -26,7 +26,7 @@ export const validateExtensionOptions = createObjectValidator(
     id: withDefault(isString, ''),
     password: withDefault(isString, ''),
     duplicate: withDefault(isEnum(TOGGLE_VALUES), '1'),
-    tags: withDefault(isString, 'ODH'),
+    tags: withDefault(isString, 'FlashDict'),
     deckname: withDefault(isString, 'Default'),
     typename: withDefault(isString, 'Basic'),
     expression: withDefault(isString, 'Front'),

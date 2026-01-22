@@ -16,7 +16,8 @@
         <div class="tabmenus">
             <a href="#" data-contentid="tab-1" class="tabmenu active" data-i18n="tabExtensionTitle">General</a>
             <a href="#" data-contentid="tab-2" class="tabmenu" data-i18n="tabServicesTitle">Anki</a>
-            <a href="#" data-contentid="tab-3" class="tabmenu" data-i18n="tabScriptsTitle">Scripts</a>
+            <!-- Hidden for now: Scripts tab -->
+            <a href="#" data-contentid="tab-3" class="tabmenu" data-i18n="tabScriptsTitle" style="display:none">Scripts</a>
         </div>
 
         <form>
@@ -27,28 +28,31 @@
                         <span data-i18n="grpGeneral">General Options</span>
                         <span class="option-helps"> <a href="https://github.com/zland1851/FlashDict/blob/master/README.md" target="_blank">?</a> </span>
                     </div>
-                    <div class="leftpanel">
-                        <label data-i18n="lblEnabled">Enable/Disable</label>
-                        <div class="enabled">
-                            <input type="checkbox" value=true id="enabled">
-                            <label for="enabled"></label>
-                        </div>                        
-                        <label data-i18n="lblMouseselection">Enable/Disable</label>
-                        <div class="enabled">
-                            <input type="checkbox" value=true id="mouseselection">
-                            <label for="mouseselection"></label>
+                    <div class="form-section">
+                        <div class="toggle-row">
+                            <label data-i18n="lblEnabled">Extension Enabled</label>
+                            <div class="enabled">
+                                <input type="checkbox" value=true id="enabled">
+                                <label for="enabled"></label>
+                            </div>
+                        </div>
+                        <div class="toggle-row">
+                            <label data-i18n="lblMouseselection">Mouse Selection</label>
+                            <div class="enabled">
+                                <input type="checkbox" value=true id="mouseselection">
+                                <label for="mouseselection"></label>
+                            </div>
+                        </div>
+                        <div class="toggle-row">
+                            <label data-i18n="lblHotkey">Selection Hotkey</label>
+                            <select id="hotkey">
+                                <option value="0">Off</option>
+                                <option value="16">Shift</option>
+                                <option value="17">Ctrl</option>
+                                <option value="18">Alt</option>
+                            </select>
                         </div>
                     </div>
-                    <div class="rightpanel">
-                        <label data-i18n="lblHotkey">AuoSel. HotKey</label>
-                        <select id="hotkey">
-                            <option value="0">Off</option>
-                            <option value="16">Shift</option>
-                            <option value="17">Ctrl</option>
-                            <option value="18">Alt</option>
-                        </select>
-                    </div>
-                    <div class="clearfix"></div>
                 </div>
 
                 <div class="grouppanel">
@@ -92,71 +96,99 @@
                 </div>
             </div>
             <div id="tab-2" class="tabcontent" style="display:none">
-                <div class="grouppanel">
+                <div class="grouppanel anki-panel">
                     <div class="grouptitle">
                         <span data-i18n="grpAnki">Anki Options</span>
-                        <span class="option-helps"> <a href="https://github.com/FooSoft/anki-connect" target="_blank">?</a> </span>
+                        <span class="option-helps"> <a href="https://git.sr.ht/~foosoft/anki-connect" target="_blank">?</a> </span>
                     </div>
-                    <div class="crosspanel">
-                        <label data-i18n="lblServices">Services</label>
-                        <select id="services" class="col-2x">
-                            <option value="none">None</option>
-                            <option value="ankiconnect">Ankiconnect</option>
-                            <option value="ankiweb">Ankiweb</option>
-                        </select>
-                        <label id="services-status">Anki Status</label>
+
+                    <div class="form-section">
+                        <div class="form-row">
+                            <label data-i18n="lblServices">Data Export</label>
+                            <select id="services">
+                                <option value="none">None</option>
+                                <option value="ankiconnect">AnkiConnect</option>
+                                <option value="ankiweb">AnkiWeb</option>
+                            </select>
+                        </div>
+                        <div class="status-row">
+                            <span id="services-status" class="status-badge">Not Connected</span>
+                        </div>
                     </div>
-                    <div id="user-options">
-                        <hr>
-                        <div class="crosspanel">
-                            <label data-i18n="lblUsername">ID</label>
-                            <input type="text" id="id" placeholder="Ankiweb Username" class="col-2x">
-                            <label><a href="https://ankiweb.net/account/register" target="_blank" data-i18n="lblSignup">?</a></label>
+
+                    <div id="user-options" class="form-section">
+                        <div class="form-row">
+                            <label data-i18n="lblUsername">Username</label>
+                            <input type="text" id="id" placeholder="Enter your AnkiWeb username">
+                        </div>
+                        <div class="form-row">
                             <label data-i18n="lblPassword">Password</label>
-                            <input type="password" id="password" placeholder="Ankiweb Password" class="col-2x">
-                            <label class="button" id="login" data-i18n="lblSignin">Signin</label>
+                            <input type="password" id="password" placeholder="Enter your AnkiWeb password">
+                        </div>
+                        <div class="button-row">
+                            <button type="button" class="btn btn-primary" id="login" data-i18n="lblSignin">Sign In</button>
+                            <a href="https://ankiweb.net/account/register" target="_blank" class="link-signup" data-i18n="lblSignup">Create Account</a>
                         </div>
                     </div>
-                    <div id="anki-options">
-                        <hr>
-                        <div class="crosspanel">
-                            <label data-i18n="lblDeckname">Deck Name</label>
-                            <select id="deckname" class="col-3x"></select>
-                            <label data-i18n="lblTypename">Type Name</label>
-                            <select id="typename" class="col-3x"></select>
+
+                    <div id="anki-options" class="form-section">
+                        <div class="section-title">Card Settings</div>
+                        <div class="form-grid">
+                            <div class="form-row">
+                                <label data-i18n="lblDeckname">Deck</label>
+                                <select id="deckname"></select>
+                            </div>
+                            <div class="form-row">
+                                <label data-i18n="lblTypename">Note Type</label>
+                                <select id="typename"></select>
+                            </div>
                         </div>
-                        <hr>
-                        <div class="leftpanel">
-                            <label for="expression" data-i18n="lblExpression">Expression</label>
-                            <select id="expression"></select>
-                            <label for="reading" data-i18n="lblReading">Reading</label>
-                            <select id="reading"></select>
-                            <label for="definition" data-i18n="lblDefinition">Definition</label>
-                            <select id="definition"></select>
-                            <label for="definitions" data-i18n="lblDefinitions">Definition</label>
-                            <select id="definitions"></select>
+
+                        <div class="section-title">Field Mapping</div>
+                        <div class="form-grid">
+                            <div class="form-row">
+                                <label for="expression" data-i18n="lblExpression">Expression</label>
+                                <select id="expression"></select>
+                            </div>
+                            <div class="form-row">
+                                <label for="reading" data-i18n="lblReading">Reading</label>
+                                <select id="reading"></select>
+                            </div>
+                            <div class="form-row">
+                                <label for="definition" data-i18n="lblDefinition">Definition</label>
+                                <select id="definition"></select>
+                            </div>
+                            <div class="form-row">
+                                <label for="definitions" data-i18n="lblDefinitions">Definitions</label>
+                                <select id="definitions"></select>
+                            </div>
+                            <div class="form-row">
+                                <label for="sentence" data-i18n="lblSentence">Sentence</label>
+                                <select id="sentence"></select>
+                            </div>
+                            <div class="form-row">
+                                <label for="extrainfo" data-i18n="lblExtrainfo">Extra Info</label>
+                                <select id="extrainfo"></select>
+                            </div>
+                            <div class="form-row">
+                                <label for="url" data-i18n="lblUrl">URL</label>
+                                <select id="url"></select>
+                            </div>
+                            <div class="form-row">
+                                <label for="audio" data-i18n="lblAudio">Audio</label>
+                                <select id="audio"></select>
+                            </div>
                         </div>
-                        <div class="rightpanel">
-                            <label for="sentence" data-i18n="lblSentence">Sentence</label>
-                            <select id="sentence"> </select>
-                            <label for="extrainfo" data-i18n="lblExtrainfo">Extrainfo</label>
-                            <select id="extrainfo"> </select>
-                            <label for="url" data-i18n="lblUrl">URL</label>
-                            <select id="url"></select>
-                            <label for="audio" data-i18n="lblAudio">Audio</label>
-                            <select id="audio"></select>
-                        </div>
-                        <div class="clearfix"></div>
-                        <hr>
-                        <div class="crosspanel">
-                            <label data-i18n="lblTags">Tags Name</label>
-                            <input type="text" id="tags" placeholder="Tags" class="col-3x">
-                        </div>
-                        <div id="duplicate-option">
-                            <hr>
-                            <div class="crosspanel">
-                                <label data-i18n="lblAllowDuplicate">Allow Duplicate</label>
-                                <select id="duplicate" class="col-3x">
+
+                        <div class="section-title">Additional Options</div>
+                        <div class="form-grid">
+                            <div class="form-row">
+                                <label data-i18n="lblTags">Tags</label>
+                                <input type="text" id="tags" placeholder="FlashDict">
+                            </div>
+                            <div class="form-row" id="duplicate-option">
+                                <label data-i18n="lblAllowDuplicate">Duplicates</label>
+                                <select id="duplicate">
                                     <option value="0" data-i18n="selNotAllowed">Not Allowed</option>
                                     <option value="1" data-i18n="selAllowed">Allowed</option>
                                 </select>
@@ -199,7 +231,8 @@
         <hr>
         <div class="grouppannel">
             <div class="leftpanel" style="border-right:initial">
-                <label class="button" id="saveload" data-i18n="btnSaveLoad">Save and Load</label>
+                <!-- Hidden for now: Load Scripts button -->
+                <label class="button" id="saveload" data-i18n="btnSaveLoad" style="display:none">Save and Load</label>
                 <div class="gifs">
                     <span class="gif" id="gif-load"><img src="/fg/img/load.gif" alt=""></span>
                     <span class="gif" id="gif-good"><img src="/fg/img/good.png" alt=""></span>
