@@ -233,8 +233,10 @@ export class SandboxBridge {
       };
     }
 
-    // Build name list
-    const dictNamelist = validResults.map((r) => r.result!);
+    // Build name list - filter out nulls and extract result with type safety
+    const dictNamelist = validResults
+      .map((r) => r.result)
+      .filter((result): result is { objectname: string; displayname: string } => result !== null);
     const objectNames = dictNamelist.map((d) => d.objectname);
 
     // Select dictionary

@@ -97,15 +97,23 @@ async function setupOffscreenDocument(path: string): Promise<void> {
 }
 
 /**
- * Keep Service Worker alive
- * Manifest V3 Service Workers can be terminated, this keeps them active
+ * Keep Service Worker alive using Chrome Alarms API
+ * More efficient than setInterval for Manifest V3 Service Workers
  */
-function keepAlive(): void {
-  setInterval(() => {
-    chrome.runtime.getPlatformInfo(() => {
-      // Just to keep the Service Worker active
-    });
-  }, 20000);
+const KEEP_ALIVE_ALARM = 'keepAlive';
+
+function setupKeepAlive(): void {
+  // Create alarm that fires every 25 seconds (minimum is 30s for unpacked, but we use periodInMinutes)
+  chrome.alarms.create(KEEP_ALIVE_ALARM, { periodInMinutes: 0.4 });
+
+  chrome.alarms.onAlarm.addListener((alarm) => {
+    if (alarm.name === KEEP_ALIVE_ALARM) {
+      // Light operation to keep Service Worker active
+      chrome.runtime.getPlatformInfo(() => {
+        // Keep alive ping
+      });
+    }
+  });
 }
 
 /**
@@ -459,13 +467,14 @@ async function initialize(config: ServiceWorkerConfig = {}): Promise<void> {
 
     // Register command handler
     backendService.onCommand('enabled', async () => {
-      const currentOptions = context!.optionsManager.getCurrent();
+      if (!context) return;
+      const currentOptions = context.optionsManager.getCurrent();
       if (currentOptions) {
         const newOptions: ExtensionOptions = {
           ...currentOptions,
           enabled: !currentOptions.enabled,
         };
-        await context!.optionsManager.save(newOptions);
+        await context.optionsManager.save(newOptions);
       }
     });
 
@@ -484,9 +493,9 @@ async function initialize(config: ServiceWorkerConfig = {}): Promise<void> {
  * Entry Point
  */
 
-// Keep Service Worker alive
-chrome.runtime.onStartup.addListener(keepAlive);
-keepAlive();
+// Keep Service Worker alive using Alarms API
+chrome.runtime.onStartup.addListener(setupKeepAlive);
+setupKeepAlive();
 
 // Initialize on startup
 initialize({ debug: true }).catch((error) => {

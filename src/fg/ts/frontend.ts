@@ -6,6 +6,7 @@ import { Popup } from './popup.js';
 import { rangeFromPoint, TextSourceRange } from './range.js';
 import { selectedText, isEmpty, getSentence, isValidElement } from './utils/text.js';
 import { isConnected, addNote, getTranslation, playAudio } from './api.js';
+import { sanitizeDictionaryHtml, escapeHtml } from './utils/sanitizer.js';
 
 interface Point {
   x: number;
@@ -291,9 +292,9 @@ class ODHFront {
       content += `
         <div class="odh-headsection">
           <span class="odh-audios">${audiosegment}</span>
-          <span class="odh-expression">${note.expression}</span>
-          <span class="odh-reading">${note.reading}</span>
-          <span class="odh-extra">${note.extrainfo}</span>
+          <span class="odh-expression">${escapeHtml(note.expression)}</span>
+          <span class="odh-reading">${sanitizeDictionaryHtml(note.reading)}</span>
+          <span class="odh-extra">${sanitizeDictionaryHtml(note.extrainfo)}</span>
         </div>`;
 
       for (const [dindex, definition] of note.definitions.entries()) {
@@ -301,7 +302,7 @@ class ODHFront {
           currentServices === 'none' || currentServices === ''
             ? ''
             : `<img ${imageclass} data-nindex="${nindex}" data-dindex="${dindex}" src="${chrome.runtime.getURL('fg/img/' + image)}" />`;
-        content += `<div class="odh-definition">${button}${definition}</div>`;
+        content += `<div class="odh-definition">${button}${sanitizeDictionaryHtml(definition)}</div>`;
       }
       content += '</div>';
     }
@@ -337,7 +338,7 @@ class ODHFront {
           <img id="good" src="${root}fg/img/good.png"/>
           <img id="fail" src="${root}fg/img/fail.png"/>
           <img id="play" src="${root}fg/img/play.png"/>
-          <div id="context">${this.sentence}</div>
+          <div id="context">${escapeHtml(this.sentence)}</div>
           <div id="monolingual">${monolingual}</div>
         </div>
         <script src="${root}fg/js/spell.js"></script>

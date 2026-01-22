@@ -89,10 +89,10 @@ export function isArray<T>(itemValidator: ValidatorFn<T>): ValidatorFn<T[]> {
     const results: T[] = [];
     for (let i = 0; i < value.length; i++) {
       const result = itemValidator(value[i]);
-      if (!result.success) {
-        return { success: false, error: `Array item ${i}: ${result.error}` };
+      if (!result.success || result.data === undefined) {
+        return { success: false, error: `Array item ${i}: ${result.error ?? 'undefined data'}` };
       }
-      results.push(result.data!);
+      results.push(result.data);
     }
     return { success: true, data: results };
   };

@@ -76,9 +76,14 @@ class TypeScriptBridge implements ODH_TypeScriptBridge {
 // Create and expose global bridge
 const bridge = new TypeScriptBridge();
 
+// Extend global scope type for TypeScript bridge
+interface GlobalWithODH {
+  ODH_TS?: ODH_TypeScriptBridge;
+}
+
 // Make available on self (Service Worker global)
 if (typeof self !== 'undefined') {
-  (self as any).ODH_TS = bridge;
+  (self as unknown as GlobalWithODH).ODH_TS = bridge;
 }
 
 // Also export for potential module usage

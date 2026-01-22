@@ -187,7 +187,10 @@ export class NoteFormatterService {
       if (!fieldMappings.has(ankiField)) {
         fieldMappings.set(ankiField, []);
       }
-      fieldMappings.get(ankiField)!.push(value);
+      const fieldArray = fieldMappings.get(ankiField);
+      if (fieldArray) {
+        fieldArray.push(value);
+      }
     }
 
     return fieldMappings;

@@ -66,4 +66,10 @@ export {
 } from './validators/message.js';
 
 // Sanitization helpers
-export { sanitizeForLog, sanitizeHtml, sanitizeScriptName } from './validators/sanitizers.js';
+export {
+  sanitizeForLog,
+  sanitizeHtml,
+  sanitizeDictionaryHtml,
+  escapeHtml,
+  sanitizeScriptName,
+} from './validators/sanitizers.js';

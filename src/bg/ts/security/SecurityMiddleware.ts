@@ -354,9 +354,11 @@ export function composeMiddleware(...middlewares: MiddlewareFn[]): MiddlewareFn 
     let next = finalHandler;
 
     for (let i = middlewares.length - 1; i >= 0; i--) {
-      const middleware = middlewares[i]!;
-      const currentNext = next;
-      next = () => middleware(message, sender, currentNext);
+      const middleware = middlewares[i];
+      if (middleware) {
+        const currentNext = next;
+        next = () => middleware(message, sender, currentNext);
+      }
     }
 
     return next();

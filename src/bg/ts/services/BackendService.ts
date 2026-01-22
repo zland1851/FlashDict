@@ -16,6 +16,69 @@ import { ChromeEventHandler, createChromeEventHandler } from './ChromeEventHandl
 import { NoteFormatterService, NoteDefinition } from './NoteFormatterService';
 
 /**
+ * LRU Cache entry with timestamp for TTL
+ */
+interface CacheEntry<T> {
+  value: T;
+  timestamp: number;
+}
+
+/**
+ * Simple LRU Cache implementation for dictionary lookups
+ */
+class LRUCache<T> {
+  private readonly cache = new Map<string, CacheEntry<T>>();
+  private readonly maxSize: number;
+  private readonly ttl: number;
+
+  constructor(maxSize: number = 100, ttlMs: number = 5 * 60 * 1000) {
+    this.maxSize = maxSize;
+    this.ttl = ttlMs;
+  }
+
+  get(key: string): T | null {
+    const entry = this.cache.get(key);
+    if (!entry) return null;
+
+    // Check TTL
+    if (Date.now() - entry.timestamp > this.ttl) {
+      this.cache.delete(key);
+      return null;
+    }
+
+    // Move to end (most recently used)
+    this.cache.delete(key);
+    this.cache.set(key, entry);
+    return entry.value;
+  }
+
+  set(key: string, value: T): void {
+    // Delete existing entry to update position
+    if (this.cache.has(key)) {
+      this.cache.delete(key);
+    }
+
+    // Evict oldest entries if at capacity
+    while (this.cache.size >= this.maxSize) {
+      const firstKey = this.cache.keys().next().value;
+      if (firstKey !== undefined) {
+        this.cache.delete(firstKey);
+      }
+    }
+
+    this.cache.set(key, { value, timestamp: Date.now() });
+  }
+
+  clear(): void {
+    this.cache.clear();
+  }
+
+  get size(): number {
+    return this.cache.size;
+  }
+}
+
+/**
  * Backend Service configuration
  */
 export interface BackendServiceConfig {
@@ -70,6 +133,9 @@ export class BackendService {
   private readonly ankiConnect: IAnkiService;
   private readonly ankiWeb: IAnkiService;
   private readonly hooks: BackendServiceHooks;
+
+  /** LRU cache for dictionary lookups (100 entries, 5 min TTL) */
+  private readonly lookupCache = new LRUCache<DictionaryLookupResult>(100, 5 * 60 * 1000);
 
   private state: BackendServiceState = {
     options: null,
@@ -222,7 +288,7 @@ export class BackendService {
   }
 
   /**
-   * Find term using the dictionary sandbox
+   * Find term using the dictionary sandbox with LRU caching
    */
   async findTerm(expression: string): Promise<DictionaryLookupResult | null> {
     if (!this.state.dictionariesLoaded) {
@@ -230,7 +296,28 @@ export class BackendService {
       return null;
     }
 
-    return this.sandboxBridge.findTerm(expression);
+    // Check cache first
+    const cached = this.lookupCache.get(expression);
+    if (cached) {
+      this.log(`Cache hit for: ${expression}`);
+      return cached;
+    }
+
+    // Query sandbox and cache result
+    const result = await this.sandboxBridge.findTerm(expression);
+    if (result) {
+      this.lookupCache.set(expression, result);
+      this.log(`Cached result for: ${expression}`);
+    }
+    return result;
+  }
+
+  /**
+   * Clear the lookup cache (useful when dictionaries change)
+   */
+  clearLookupCache(): void {
+    this.lookupCache.clear();
+    this.log('Lookup cache cleared');
   }
 
   /**

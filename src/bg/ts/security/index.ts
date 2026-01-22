@@ -60,6 +60,8 @@ export {
   // Sanitizers
   sanitizeForLog,
   sanitizeHtml,
+  sanitizeDictionaryHtml,
+  escapeHtml,
   sanitizeScriptName,
 } from './Validator';
 

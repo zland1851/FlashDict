@@ -166,9 +166,11 @@ export class OptionsManager implements IOptionsStore {
       await this.load();
     }
 
-    const oldOptions = { ...this.currentOptions! };
+    // After load(), currentOptions is guaranteed to be set
+    const currentOpts = this.currentOptions as ExtensionOptions;
+    const oldOptions = { ...currentOpts };
     const newOptions = this.sanitizeOptions({
-      ...this.currentOptions!,
+      ...currentOpts,
       ...changes,
     });
 

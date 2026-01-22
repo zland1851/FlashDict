@@ -35,10 +35,14 @@
     "options_ui": {
         "page": "bg/options.html"
     },
-    "permissions": ["webRequest", "storage", "offscreen"],
+    "permissions": ["storage", "offscreen", "alarms"],
     "host_permissions": ["https://ankiweb.net/*", "https://ankiuser.net/*", "http://127.0.0.1:8765/*", "http://localhost:8765/*"],
     "sandbox": {
         "pages": ["bg/sandbox/sandbox.html"]
+    },
+    "content_security_policy": {
+        "extension_pages": "script-src 'self'; object-src 'self'",
+        "sandbox": "sandbox allow-scripts allow-forms allow-popups allow-modals; script-src 'self' 'unsafe-eval'; child-src 'self';"
     },
     "web_accessible_resources": [{
         "resources": [

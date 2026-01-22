@@ -396,7 +396,10 @@ export class AnkiWebService implements IAnkiService {
    */
   private async saveNote(note: AnkiNote, retryCount: number = 1): Promise<boolean | null> {
     try {
-      const resp = await this.apiSave(note, this.profile!);
+      if (!this.profile) {
+        return null;
+      }
+      const resp = await this.apiSave(note, this.profile);
 
       if (resp !== null) {
         return true;

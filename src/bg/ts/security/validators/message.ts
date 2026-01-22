@@ -65,11 +65,11 @@ export function getActionValidator(action: string): ValidatorFn<unknown> | undef
 export function validateMessage(message: unknown): ValidationResult<BaseMessage> {
   // First validate base structure
   const baseResult = validateBaseMessage(message);
-  if (!baseResult.success) {
+  if (!baseResult.success || !baseResult.data) {
     return baseResult;
   }
 
-  const msg = baseResult.data!;
+  const msg = baseResult.data;
 
   // Get action-specific validator
   const actionValidator = getActionValidator(msg.action);
