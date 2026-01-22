@@ -40,8 +40,7 @@ const COPY_PATTERNS = [
   // Background CSS files
   { from: 'bg/css', to: 'bg/css' },
 
-  // Background JS files (remaining legacy for UI and offscreen document)
-  { from: 'bg/js', to: 'bg/js' },
+  // Note: bg/js/ files are now generated from TypeScript (src/bg/ts/ui/)
 
   // Sandbox files
   { from: 'bg/sandbox', to: 'bg/sandbox' },
@@ -54,8 +53,7 @@ const COPY_PATTERNS = [
   { from: 'fg/font', to: 'fg/font' },
   { from: 'fg/img', to: 'fg/img' },
 
-  // Frontend JS files (legacy, will be replaced by TS gradually)
-  { from: 'fg/js', to: 'fg/js' },
+  // Note: fg/js/ files are now generated from TypeScript (src/fg/ts/)
 ];
 
 /**
@@ -145,6 +143,99 @@ function bundleServiceWorker() {
 }
 
 /**
+ * Bundle UI scripts with esbuild
+ * These are the TypeScript files for popup, options, and background pages
+ */
+function bundleUIScripts() {
+  console.log('📦 Bundling UI scripts...');
+  try {
+    const esbuild = require('esbuild');
+
+    // UI entry points
+    const uiEntryPoints = [
+      { entry: 'bg/ts/ui/popup.ts', out: 'bg/js/popup.js' },
+      { entry: 'bg/ts/ui/options.ts', out: 'bg/js/options.js' },
+      { entry: 'bg/ts/ui/tabmenu.ts', out: 'bg/js/tabmenu.js' },
+      { entry: 'bg/ts/ui/utils.ts', out: 'bg/js/utils.js' },
+      { entry: 'bg/ts/ui/agent.ts', out: 'bg/js/agent.js' },
+      { entry: 'bg/ts/ui/background.ts', out: 'bg/js/background.js' },
+    ];
+
+    for (const { entry, out } of uiEntryPoints) {
+      const entryPath = path.join(SRC_DIR, entry);
+      if (!fs.existsSync(entryPath)) {
+        console.warn(`  ⚠️  Skipping ${entry} (not found)`);
+        continue;
+      }
+
+      esbuild.buildSync({
+        entryPoints: [entryPath],
+        bundle: true,
+        outfile: path.join(DIST_DIR, out),
+        format: 'iife', // Immediately Invoked Function Expression for browser scripts
+        platform: 'browser',
+        target: 'es2020',
+        sourcemap: true,
+        minify: false,
+      });
+      console.log(`  ✓ ${entry} → ${out}`);
+    }
+
+    console.log('✅ UI scripts bundled\n');
+  } catch (error) {
+    console.error('❌ UI scripts bundling failed:', error.message);
+    process.exit(1);
+  }
+}
+
+/**
+ * Bundle frontend (content script) files with esbuild
+ * These are the TypeScript files for content scripts
+ */
+function bundleFrontendScripts() {
+  console.log('📦 Bundling frontend scripts...');
+  try {
+    const esbuild = require('esbuild');
+
+    // Frontend entry points
+    const frontendEntryPoints = [
+      { entry: 'fg/ts/api.ts', out: 'fg/js/api.js' },
+      { entry: 'fg/ts/text.ts', out: 'fg/js/text.js' },
+      { entry: 'fg/ts/range.ts', out: 'fg/js/range.js' },
+      { entry: 'fg/ts/spell.ts', out: 'fg/js/spell.js' },
+      { entry: 'fg/ts/frame.ts', out: 'fg/js/frame.js' },
+      { entry: 'fg/ts/popup.ts', out: 'fg/js/popup.js' },
+      { entry: 'fg/ts/frontend.ts', out: 'fg/js/frontend.js' },
+    ];
+
+    for (const { entry, out } of frontendEntryPoints) {
+      const entryPath = path.join(SRC_DIR, entry);
+      if (!fs.existsSync(entryPath)) {
+        console.warn(`  ⚠️  Skipping ${entry} (not found)`);
+        continue;
+      }
+
+      esbuild.buildSync({
+        entryPoints: [entryPath],
+        bundle: true,
+        outfile: path.join(DIST_DIR, out),
+        format: 'iife', // IIFE for content scripts
+        platform: 'browser',
+        target: 'es2020',
+        sourcemap: true,
+        minify: false,
+      });
+      console.log(`  ✓ ${entry} → ${out}`);
+    }
+
+    console.log('✅ Frontend scripts bundled\n');
+  } catch (error) {
+    console.error('❌ Frontend scripts bundling failed:', error.message);
+    process.exit(1);
+  }
+}
+
+/**
  * Copies static files to dist
  */
 function copyStaticFiles() {
@@ -217,8 +308,10 @@ function build() {
   try {
     clean();
     compileTypeScript();
-    bundleServiceWorker();
-    copyStaticFiles();
+    copyStaticFiles();        // Copy static files first
+    bundleServiceWorker();    // Then bundle service worker (overwrites any copied TS output)
+    bundleUIScripts();        // Then bundle UI scripts (overwrites legacy JS)
+    bundleFrontendScripts();  // Then bundle frontend scripts (overwrites legacy JS)
 
     const duration = ((Date.now() - startTime) / 1000).toFixed(2);
     buildSummary();
