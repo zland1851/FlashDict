@@ -25,6 +25,9 @@ build/
 *.tsbuildinfo
 *.zip
 
+# Store submission files
+store/
+
 # Logs
 *.log
 npm-debug.log*
