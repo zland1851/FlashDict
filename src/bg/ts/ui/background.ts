@@ -31,17 +31,20 @@ class ODHBackground {
     console.log('[ODH Offscreen] Sandbox iframe:', iframe);
 
     if (iframe) {
-      iframe.addEventListener('load', () => {
-        console.log('[ODH Offscreen] Sandbox iframe loaded');
-        this.agent = new Agent(iframe.contentWindow);
-        console.log('[ODH Offscreen] Agent initialized');
-      });
-
       // If iframe is already loaded, initialize immediately
       if (iframe.contentWindow && iframe.contentWindow.document.readyState === 'complete') {
         console.log('[ODH Offscreen] Sandbox iframe already loaded');
         this.agent = new Agent(iframe.contentWindow);
-        console.log('[ODH Offscreen] Agent initialized (immediate)');
+        console.log('[ODH Offscreen] Agent initialized');
+      } else {
+        // Otherwise wait for load event
+        iframe.addEventListener('load', () => {
+          console.log('[ODH Offscreen] Sandbox iframe loaded');
+          if (!this.agent) {
+            this.agent = new Agent(iframe.contentWindow);
+            console.log('[ODH Offscreen] Agent initialized');
+          }
+        });
       }
     } else {
       console.error('[ODH Offscreen] Sandbox iframe not found!');

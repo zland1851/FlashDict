@@ -97,3 +97,6 @@ export class Agent {
 }
 
 export default Agent;
+
+// Expose Agent globally for sandbox
+(window as Window & { Agent?: typeof Agent }).Agent = Agent;
