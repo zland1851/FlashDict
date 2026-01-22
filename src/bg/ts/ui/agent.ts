@@ -73,7 +73,7 @@ export class Agent {
         {
           action: 'sandboxRequest',
           data: { action, params },
-          target: 'sandbox'
+          target: 'sandbox',
         },
         (_response) => {
           // Check for errors

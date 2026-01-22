@@ -107,10 +107,7 @@ export interface IExtendedDictionary extends IDictionary {
 export function isDictionary(obj: unknown): obj is IDictionary {
   if (!obj || typeof obj !== 'object') return false;
   const dict = obj as IDictionary;
-  return (
-    typeof dict.findTerm === 'function' &&
-    typeof dict.getMetadata === 'function'
-  );
+  return typeof dict.findTerm === 'function' && typeof dict.getMetadata === 'function';
 }
 
 /**
@@ -120,8 +117,6 @@ export function isValidDefinition(def: unknown): def is DictionaryDefinition {
   if (!def || typeof def !== 'object') return false;
   const d = def as DictionaryDefinition;
   return (
-    typeof d.expression === 'string' &&
-    typeof d.definition === 'string' &&
-    Array.isArray(d.audios)
+    typeof d.expression === 'string' && typeof d.definition === 'string' && Array.isArray(d.audios)
   );
 }

@@ -73,7 +73,11 @@ export class TabManager {
   /**
    * Invoke action on specific tab
    */
-  async invokeOnTab(tabId: number, action: string, params?: Record<string, unknown>): Promise<unknown> {
+  async invokeOnTab(
+    tabId: number,
+    action: string,
+    params?: Record<string, unknown>
+  ): Promise<unknown> {
     return this.sendToTab(tabId, { action, params });
   }
 

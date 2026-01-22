@@ -9,16 +9,8 @@
  * - All legacy JavaScript code removed
  */
 
-import {
-  bootstrap,
-  EVENTS,
-  MESSAGE_ACTIONS,
-  type BootstrapContext
-} from './bootstrap';
-import {
-  createBackendService,
-  BackendService
-} from './services/BackendService';
+import { bootstrap, EVENTS, MESSAGE_ACTIONS, type BootstrapContext } from './bootstrap';
+import { createBackendService, BackendService } from './services/BackendService';
 import { createHandler } from './core/MessageRouter';
 import type { MessageSender } from './interfaces/IMessageHandler';
 import type { ExtensionOptions } from './interfaces/IOptionsStore';
@@ -39,7 +31,7 @@ interface ServiceWorkerConfig {
  */
 const DEFAULT_CONFIG: Required<ServiceWorkerConfig> = {
   debug: false,
-  offscreenDocumentPath: '/bg/background.html'
+  offscreenDocumentPath: '/bg/background.html',
 };
 
 /**
@@ -72,7 +64,7 @@ async function setupOffscreenDocument(path: string): Promise<void> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const existingContexts = await (chrome.runtime as any).getContexts({
       contextTypes: ['OFFSCREEN_DOCUMENT'],
-      documentUrls: [offscreenUrl]
+      documentUrls: [offscreenUrl],
     });
 
     console.log('[ServiceWorker] Existing contexts:', existingContexts?.length ?? 0);
@@ -92,7 +84,7 @@ async function setupOffscreenDocument(path: string): Promise<void> {
       creatingOffscreen = (chrome as any).offscreen.createDocument({
         url: path,
         reasons: ['IFRAME_SCRIPTING', 'AUDIO_PLAYBACK'],
-        justification: 'ODH needs offscreen document for dictionary sandbox and audio playback'
+        justification: 'ODH needs offscreen document for dictionary sandbox and audio playback',
       });
       await creatingOffscreen;
       creatingOffscreen = null;
@@ -227,7 +219,7 @@ function registerAdditionalHandlers(ctx: BootstrapContext, backend: BackendServi
 
         const response = await fetch(url, {
           method: 'GET',
-          signal: controller.signal
+          signal: controller.signal,
         });
 
         clearTimeout(timeoutId);
@@ -253,7 +245,10 @@ function registerAdditionalHandlers(ctx: BootstrapContext, backend: BackendServi
         return null;
       }
       const result = builtin.findTerm(params.dict, params.word);
-      console.log(`[ServiceWorker] getBuiltin(${params.dict}, ${params.word}):`, result ? 'found' : 'not found');
+      console.log(
+        `[ServiceWorker] getBuiltin(${params.dict}, ${params.word}):`,
+        result ? 'found' : 'not found'
+      );
       return result;
     })
   );
@@ -304,7 +299,7 @@ function setupMessageListener(ctx: BootstrapContext, backend: BackendService): v
         tabId: sender.tab?.id,
         frameId: sender.frameId,
         url: sender.url,
-        extensionId: sender.id
+        extensionId: sender.id,
       };
 
       ctx.messageRouter
@@ -348,7 +343,10 @@ function setupEventSubscriptions(ctx: BootstrapContext, backend: BackendService)
       const updatedOptions = backend.getOptions();
       if (updatedOptions) {
         await optionsManager.save(updatedOptions);
-        console.log('[ServiceWorker] Options saved with dictNamelist:', updatedOptions.dictNamelist?.length);
+        console.log(
+          '[ServiceWorker] Options saved with dictNamelist:',
+          updatedOptions.dictNamelist?.length
+        );
       }
     } catch (error) {
       console.error('Failed to initialize dictionaries:', error);
@@ -367,7 +365,7 @@ async function initialize(config: ServiceWorkerConfig = {}): Promise<void> {
   // Merge with defaults
   const finalConfig: Required<ServiceWorkerConfig> = {
     debug: config.debug ?? DEFAULT_CONFIG.debug,
-    offscreenDocumentPath: config.offscreenDocumentPath ?? DEFAULT_CONFIG.offscreenDocumentPath
+    offscreenDocumentPath: config.offscreenDocumentPath ?? DEFAULT_CONFIG.offscreenDocumentPath,
   };
 
   const log = (message: string) => {
@@ -386,7 +384,7 @@ async function initialize(config: ServiceWorkerConfig = {}): Promise<void> {
     // Initialize builtin dictionary and deinflector
     builtin = createBuiltin();
     deinflector = createDeinflector({
-      dataPath: 'bg/data/wordforms.json'
+      dataPath: 'bg/data/wordforms.json',
     });
 
     // Load builtin data (Collins dictionary)
@@ -415,8 +413,8 @@ async function initialize(config: ServiceWorkerConfig = {}): Promise<void> {
         },
         onBootstrapError: (error) => {
           console.error('Bootstrap error:', error);
-        }
-      }
+        },
+      },
     });
 
     // Load options from storage
@@ -429,16 +427,16 @@ async function initialize(config: ServiceWorkerConfig = {}): Promise<void> {
       {
         ankiConnectService: context.ankiConnectService,
         ankiWebService: context.ankiWebService,
-        noteFormatterService: context.noteFormatterService
+        noteFormatterService: context.noteFormatterService,
       },
       {
-        debug: finalConfig.debug
+        debug: finalConfig.debug,
       },
       {
         onInitialized: () => log('BackendService initialized'),
         onDictionariesLoaded: () => log('Dictionaries loaded'),
         onOptionsChanged: (opts) => log(`Options changed: enabled=${opts.enabled}`),
-        onError: (error, ctx) => console.error(`BackendService error in ${ctx}:`, error)
+        onError: (error, ctx) => console.error(`BackendService error in ${ctx}:`, error),
       }
     );
 
@@ -465,7 +463,7 @@ async function initialize(config: ServiceWorkerConfig = {}): Promise<void> {
       if (currentOptions) {
         const newOptions: ExtensionOptions = {
           ...currentOptions,
-          enabled: !currentOptions.enabled
+          enabled: !currentOptions.enabled,
         };
         await context!.optionsManager.save(newOptions);
       }
@@ -502,5 +500,5 @@ export {
   initialize,
   setupOffscreenDocument,
   context as getContext,
-  backendService as getBackendService
+  backendService as getBackendService,
 };

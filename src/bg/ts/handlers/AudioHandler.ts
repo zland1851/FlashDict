@@ -4,10 +4,7 @@
  * Implements IMessageHandler for MessageRouter system
  */
 
-import {
-  IMessageHandler,
-  MessageSender
-} from '../interfaces/IMessageHandler';
+import { IMessageHandler, MessageSender } from '../interfaces/IMessageHandler';
 
 /**
  * Audio handler messages
@@ -31,10 +28,7 @@ export class AudioHandler implements IMessageHandler<AudioHandlerParams, string 
    * @param _sender - Message sender information
    * @returns Promise resolving to response
    */
-  async handle(
-    params: AudioHandlerParams,
-    _sender: MessageSender
-  ): Promise<string | null> {
+  async handle(params: AudioHandlerParams, _sender: MessageSender): Promise<string | null> {
     if (!params?.url) {
       throw new Error('Invalid params: url is required');
     }
@@ -43,7 +37,7 @@ export class AudioHandler implements IMessageHandler<AudioHandlerParams, string 
     try {
       const result = await this.sendToOffscreen({
         action: 'playAudio',
-        params: { url: params.url }
+        params: { url: params.url },
       });
 
       // Return result to callback if callbackId is present
@@ -51,7 +45,7 @@ export class AudioHandler implements IMessageHandler<AudioHandlerParams, string 
         await this.sendToOffscreen({
           action: 'sandboxCallback',
           params: { callbackId: params.callbackId, data: result },
-          target: 'background'
+          target: 'background',
         });
       }
 
@@ -64,7 +58,7 @@ export class AudioHandler implements IMessageHandler<AudioHandlerParams, string 
         await this.sendToOffscreen({
           action: 'sandboxCallback',
           params: { callbackId: params.callbackId, data: null },
-          target: 'background'
+          target: 'background',
         });
       }
 

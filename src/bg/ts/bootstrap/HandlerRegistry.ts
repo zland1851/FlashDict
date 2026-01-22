@@ -47,7 +47,9 @@ export class HandlerRegistry {
   /**
    * Register multiple handlers at once
    */
-  registerAll(handlers: Array<{ action: string; handler: IMessageHandler; description?: string }>): this {
+  registerAll(
+    handlers: Array<{ action: string; handler: IMessageHandler; description?: string }>
+  ): this {
     for (const { action, handler, description } of handlers) {
       this.register(action, handler, description);
     }
@@ -68,11 +70,7 @@ export class HandlerRegistry {
     );
 
     // Dictionary/Translation handlers
-    this.register(
-      MESSAGE_ACTIONS.FIND_TERM,
-      handlers.dictionaryHandler,
-      'Dictionary term lookup'
-    );
+    this.register(MESSAGE_ACTIONS.FIND_TERM, handlers.dictionaryHandler, 'Dictionary term lookup');
     this.register(
       MESSAGE_ACTIONS.GET_TRANSLATION,
       handlers.dictionaryHandler,
@@ -80,11 +78,7 @@ export class HandlerRegistry {
     );
 
     // Audio handler
-    this.register(
-      MESSAGE_ACTIONS.PLAY_AUDIO,
-      handlers.audioHandler,
-      'Audio playback'
-    );
+    this.register(MESSAGE_ACTIONS.PLAY_AUDIO, handlers.audioHandler, 'Audio playback');
 
     this.log(`Registered ${this.registrations.length} default handlers`);
     return this;
@@ -94,7 +88,7 @@ export class HandlerRegistry {
    * Unregister a handler
    */
   unregister(action: string): boolean {
-    const index = this.registrations.findIndex(r => r.action === action);
+    const index = this.registrations.findIndex((r) => r.action === action);
     if (index !== -1) {
       this.router.unregister(action);
       this.registrations.splice(index, 1);
@@ -115,14 +109,14 @@ export class HandlerRegistry {
    * Get all registered actions
    */
   getRegisteredActions(): string[] {
-    return this.registrations.map(r => r.action);
+    return this.registrations.map((r) => r.action);
   }
 
   /**
    * Get registration info for an action
    */
   getRegistration(action: string): HandlerRegistration | undefined {
-    return this.registrations.find(r => r.action === action);
+    return this.registrations.find((r) => r.action === action);
   }
 
   /**

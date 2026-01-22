@@ -53,7 +53,7 @@ export class CredentialManager {
     this.config = {
       defaultExpiryMs: config.defaultExpiryMs ?? 0,
       debug: config.debug ?? false,
-      maxCredentialsPerType: config.maxCredentialsPerType ?? 10
+      maxCredentialsPerType: config.maxCredentialsPerType ?? 10,
     };
 
     // Generate session-unique obfuscation key
@@ -70,12 +70,7 @@ export class CredentialManager {
    * @param value - Credential value (password, API key)
    * @param expiryMs - Optional expiry in milliseconds
    */
-  set(
-    type: CredentialType,
-    key: string,
-    value: string,
-    expiryMs?: number
-  ): void {
+  set(type: CredentialType, key: string, value: string, expiryMs?: number): void {
     const compositeKey = this.makeKey(type, key);
     const now = Date.now();
     const expiry = expiryMs ?? this.config.defaultExpiryMs;
@@ -94,14 +89,14 @@ export class CredentialManager {
       value: this.obfuscate(value),
       createdAt: now,
       lastAccessedAt: now,
-      expiresAt: expiry > 0 ? now + expiry : 0
+      expiresAt: expiry > 0 ? now + expiry : 0,
     });
 
     if (this.config.debug) {
       console.log('[CredentialManager] Stored credential:', {
         type,
         key: this.sanitizeKey(key),
-        expiresIn: expiry > 0 ? `${expiry}ms` : 'never'
+        expiresIn: expiry > 0 ? `${expiry}ms` : 'never',
       });
     }
   }
@@ -126,7 +121,7 @@ export class CredentialManager {
       if (this.config.debug) {
         console.log('[CredentialManager] Credential expired:', {
           type,
-          key: this.sanitizeKey(key)
+          key: this.sanitizeKey(key),
         });
       }
       return undefined;
@@ -138,7 +133,7 @@ export class CredentialManager {
     if (this.config.debug) {
       console.log('[CredentialManager] Accessed credential:', {
         type,
-        key: this.sanitizeKey(key)
+        key: this.sanitizeKey(key),
       });
     }
 
@@ -181,7 +176,7 @@ export class CredentialManager {
     if (this.config.debug && deleted) {
       console.log('[CredentialManager] Deleted credential:', {
         type,
-        key: this.sanitizeKey(key)
+        key: this.sanitizeKey(key),
       });
     }
 
@@ -207,7 +202,7 @@ export class CredentialManager {
     if (this.config.debug && count > 0) {
       console.log('[CredentialManager] Deleted credentials by type:', {
         type,
-        count
+        count,
       });
     }
 
@@ -278,7 +273,7 @@ export class CredentialManager {
         result.push({
           key: compositeKey.slice(prefix.length),
           createdAt: entry.createdAt,
-          lastAccessedAt: entry.lastAccessedAt
+          lastAccessedAt: entry.lastAccessedAt,
         });
       }
     }
@@ -311,7 +306,7 @@ export class CredentialManager {
     if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
       const array = new Uint8Array(32);
       crypto.getRandomValues(array);
-      return Array.from(array, b => b.toString(16).padStart(2, '0')).join('');
+      return Array.from(array, (b) => b.toString(16).padStart(2, '0')).join('');
     }
     // Fallback: less secure but still provides some obfuscation
     return Date.now().toString(36) + Math.random().toString(36).slice(2);
@@ -378,10 +373,7 @@ export class AnkiWebCredentials {
    * Check if AnkiWeb credentials exist
    */
   hasCredentials(): boolean {
-    return (
-      this.manager.has('ankiweb', 'username') &&
-      this.manager.has('ankiweb', 'password')
-    );
+    return this.manager.has('ankiweb', 'username') && this.manager.has('ankiweb', 'password');
   }
 
   /**
@@ -409,9 +401,7 @@ export class AnkiWebCredentials {
 /**
  * Create credential manager with default config
  */
-export function createCredentialManager(
-  config?: CredentialManagerConfig
-): CredentialManager {
+export function createCredentialManager(config?: CredentialManagerConfig): CredentialManager {
   return new CredentialManager(config);
 }
 

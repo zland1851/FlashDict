@@ -10,16 +10,15 @@
 import { createContainer } from '../core/Container';
 import { createEventBus } from '../core/EventBus';
 import { createMessageRouter } from '../core/MessageRouter';
-import { createSecurityMiddleware, defaultSecurityMiddleware } from '../security/SecurityMiddleware';
+import {
+  createSecurityMiddleware,
+  defaultSecurityMiddleware,
+} from '../security/SecurityMiddleware';
 import { createServiceFactory } from './ServiceFactory';
 import { createHandlerRegistry, HandlerRegistry } from './HandlerRegistry';
 import { createEventWiring } from './EventWiring';
 import { SERVICE_NAMES } from './constants';
-import type {
-  BootstrapContext,
-  BootstrapOptionsWithHooks,
-  CoreServices
-} from './types';
+import type { BootstrapContext, BootstrapOptionsWithHooks, CoreServices } from './types';
 
 // Re-export all bootstrap-related types and constants
 export * from './constants';
@@ -42,7 +41,7 @@ export function bootstrap(options: BootstrapOptionsWithHooks = {}): BootstrapCon
     securityConfig,
     middleware = [],
     credentials,
-    hooks
+    hooks,
   } = options;
 
   const log = (message: string) => {
@@ -73,7 +72,7 @@ export function bootstrap(options: BootstrapOptionsWithHooks = {}): BootstrapCon
       const securityMw = securityConfig
         ? createSecurityMiddleware({
             debug,
-            ...securityConfig
+            ...securityConfig,
           })
         : defaultSecurityMiddleware;
       core.messageRouter.use(securityMw);
@@ -89,11 +88,11 @@ export function bootstrap(options: BootstrapOptionsWithHooks = {}): BootstrapCon
     const factory = createServiceFactory({
       debug,
       container: core.container,
-      eventBus: core.eventBus
+      eventBus: core.eventBus,
     });
 
     const { managers, ankiServices, handlers } = factory.createAll({
-      credentialExpiryMs: credentials?.defaultExpiryMs
+      credentialExpiryMs: credentials?.defaultExpiryMs,
     });
 
     // Partial context for hooks
@@ -101,7 +100,7 @@ export function bootstrap(options: BootstrapOptionsWithHooks = {}): BootstrapCon
       ...core,
       ...managers,
       ...ankiServices,
-      ...handlers
+      ...handlers,
     };
 
     // Call services created hook
@@ -111,7 +110,7 @@ export function bootstrap(options: BootstrapOptionsWithHooks = {}): BootstrapCon
     log('Phase 4: Registering handlers...');
     const registry = createHandlerRegistry({
       debug,
-      messageRouter: core.messageRouter
+      messageRouter: core.messageRouter,
     });
     registry.registerDefaults(handlers);
 
@@ -119,7 +118,7 @@ export function bootstrap(options: BootstrapOptionsWithHooks = {}): BootstrapCon
     log('Phase 5: Wiring events...');
     const wiring = createEventWiring({
       debug,
-      eventBus: core.eventBus
+      eventBus: core.eventBus,
     });
 
     // Complete context
@@ -134,7 +133,7 @@ export function bootstrap(options: BootstrapOptionsWithHooks = {}): BootstrapCon
       noteFormatterService: ankiServices.noteFormatterService,
       optionsHandler: handlers.optionsHandler,
       dictionaryHandler: handlers.dictionaryHandler,
-      audioHandler: handlers.audioHandler
+      audioHandler: handlers.audioHandler,
     };
 
     // Wire events with full context
@@ -156,7 +155,6 @@ export function bootstrap(options: BootstrapOptionsWithHooks = {}): BootstrapCon
     }
 
     return context;
-
   } catch (error) {
     const err = error instanceof Error ? error : new Error(String(error));
     hooks?.onBootstrapError?.(err);
@@ -242,9 +240,7 @@ export function clearBootstrapContext(): void {
 /**
  * Initialize and set global context
  */
-export function initializeGlobalContext(
-  options: BootstrapOptionsWithHooks = {}
-): BootstrapContext {
+export function initializeGlobalContext(options: BootstrapOptionsWithHooks = {}): BootstrapContext {
   const context = bootstrap(options);
   setBootstrapContext(context);
   return context;

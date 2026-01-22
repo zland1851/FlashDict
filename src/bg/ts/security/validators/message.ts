@@ -12,7 +12,7 @@ import {
   validateFindTermParams,
   validateLoadScriptParams,
   validateFetchParams,
-  validateDeinflectParams
+  validateDeinflectParams,
 } from './schemas.js';
 import { validateExtensionOptions } from './options.js';
 
@@ -29,24 +29,27 @@ export interface BaseMessage {
 /**
  * Validate base message structure
  */
-export const validateBaseMessage: ValidatorFn<BaseMessage> = createObjectValidator({
-  action: isNonEmptyString,
-  params: isOptional((v) => ({ success: true, data: v })),
-  target: isOptional(isString),
-  callbackId: isOptional(isCallbackId)
-}, { allowExtra: true });
+export const validateBaseMessage: ValidatorFn<BaseMessage> = createObjectValidator(
+  {
+    action: isNonEmptyString,
+    params: isOptional((v) => ({ success: true, data: v })),
+    target: isOptional(isString),
+    callbackId: isOptional(isCallbackId),
+  },
+  { allowExtra: true }
+);
 
 /**
  * Action-specific validators map
  */
 export const ACTION_VALIDATORS: Record<string, ValidatorFn<unknown>> = {
-  'playAudio': validateAudioParams,
-  'getTranslation': validateTranslationParams,
-  'findTerm': validateFindTermParams,
-  'loadScript': validateLoadScriptParams,
-  'Fetch': validateFetchParams,
-  'Deinflect': validateDeinflectParams,
-  'opt_optionsChanged': validateExtensionOptions
+  playAudio: validateAudioParams,
+  getTranslation: validateTranslationParams,
+  findTerm: validateFindTermParams,
+  loadScript: validateLoadScriptParams,
+  Fetch: validateFetchParams,
+  Deinflect: validateDeinflectParams,
+  opt_optionsChanged: validateExtensionOptions,
 };
 
 /**
@@ -76,7 +79,7 @@ export function validateMessage(message: unknown): ValidationResult<BaseMessage>
       return {
         success: false,
         error: `Invalid params for action '${msg.action}': ${paramsResult.error}`,
-        field: paramsResult.field
+        field: paramsResult.field,
       };
     }
   }

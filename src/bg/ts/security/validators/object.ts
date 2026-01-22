@@ -27,7 +27,7 @@ export function createObjectValidator<T extends Record<string, unknown>>(
         return {
           success: false,
           error: `Field '${key}': ${fieldResult.error}`,
-          field: key
+          field: key,
         };
       }
       if (fieldResult.data !== undefined) {
@@ -43,7 +43,7 @@ export function createObjectValidator<T extends Record<string, unknown>>(
           return {
             success: false,
             error: `Unexpected field: '${key}'`,
-            field: key
+            field: key,
           };
         }
       }

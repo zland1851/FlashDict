@@ -74,10 +74,10 @@ export const MAPPABLE_FIELDS = [
   'definition',
   'definitions',
   'sentence',
-  'url'
+  'url',
 ] as const;
 
-export type MappableField = typeof MAPPABLE_FIELDS[number];
+export type MappableField = (typeof MAPPABLE_FIELDS)[number];
 
 /**
  * Error thrown when note formatting fails due to missing required options
@@ -120,10 +120,10 @@ export class NoteFormatterService {
       deckName: options.deckname,
       modelName: options.typename,
       options: {
-        allowDuplicate: this.parseDuplicateOption(options.duplicate)
+        allowDuplicate: this.parseDuplicateOption(options.duplicate),
       },
       fields: {},
-      tags: []
+      tags: [],
     };
 
     // Build field mappings
@@ -161,7 +161,7 @@ export class NoteFormatterService {
 
     return {
       valid: missing.length === 0,
-      missing
+      missing,
     };
   }
 
@@ -237,7 +237,7 @@ export class NoteFormatterService {
     const trimmed = tags.trim();
     if (trimmed.length === 0) return [];
 
-    return trimmed.split(/\s+/).filter(tag => tag.length > 0);
+    return trimmed.split(/\s+/).filter((tag) => tag.length > 0);
   }
 
   /**
@@ -247,11 +247,7 @@ export class NoteFormatterService {
    * @param audioIndex - Index of the audio file
    * @returns Generated filename
    */
-  generateAudioFilename(
-    dictName: string,
-    expression: string,
-    audioIndex: number
-  ): string {
+  generateAudioFilename(dictName: string, expression: string, audioIndex: number): string {
     const encodedExpression = encodeURIComponent(expression);
     return `ODH_${dictName}_${encodedExpression}_${audioIndex}.mp3`;
   }
@@ -287,12 +283,8 @@ export class NoteFormatterService {
 
     note.audio = {
       url: audioUrl,
-      filename: this.generateAudioFilename(
-        options.dictSelected,
-        notedef.expression,
-        audioIndex
-      ),
-      fields: [audioField]
+      filename: this.generateAudioFilename(options.dictSelected, notedef.expression, audioIndex),
+      fields: [audioField],
     };
   }
 
@@ -322,9 +314,7 @@ export class NoteFormatterService {
  * @param options - Service options
  * @returns New NoteFormatterService instance
  */
-export function createNoteFormatterService(
-  options?: { separator?: string }
-): NoteFormatterService {
+export function createNoteFormatterService(options?: { separator?: string }): NoteFormatterService {
   return new NoteFormatterService(options);
 }
 

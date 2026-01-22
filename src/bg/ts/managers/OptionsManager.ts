@@ -11,7 +11,7 @@ import {
   OptionsChangeEvent,
   OptionsChangeCallback,
   Unsubscribe,
-  DEFAULT_OPTIONS
+  DEFAULT_OPTIONS,
 } from '../interfaces/IOptionsStore';
 
 /**
@@ -37,7 +37,7 @@ export class ChromeStorageAdapter implements StorageAdapter {
       this.storage = {
         get: () => Promise.resolve({}),
         set: () => Promise.resolve(),
-        clear: () => Promise.resolve()
+        clear: () => Promise.resolve(),
       } as unknown as chrome.storage.StorageArea;
     }
   }
@@ -169,7 +169,7 @@ export class OptionsManager implements IOptionsStore {
     const oldOptions = { ...this.currentOptions! };
     const newOptions = this.sanitizeOptions({
       ...this.currentOptions!,
-      ...changes
+      ...changes,
     });
 
     await this.storage.set(newOptions as unknown as Record<string, unknown>);
@@ -287,10 +287,7 @@ export class OptionsManager implements IOptionsStore {
    * @param oldOptions - Previous options
    * @param newOptions - New options
    */
-  private notifyChange(
-    oldOptions: ExtensionOptions,
-    newOptions: ExtensionOptions
-  ): void {
+  private notifyChange(oldOptions: ExtensionOptions, newOptions: ExtensionOptions): void {
     const changedKeys = this.findChangedKeys(oldOptions, newOptions);
 
     if (changedKeys.length === 0) {
@@ -300,7 +297,7 @@ export class OptionsManager implements IOptionsStore {
     const event: OptionsChangeEvent = {
       oldOptions,
       newOptions,
-      changedKeys
+      changedKeys,
     };
 
     for (const callback of this.subscribers) {

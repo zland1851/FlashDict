@@ -49,7 +49,7 @@ export class EventWiring {
     this.subscriptions.push({
       event: EVENTS.OPTIONS_CHANGED,
       description: 'OptionsManager change -> EventBus',
-      unsubscribe
+      unsubscribe,
     });
 
     return this;
@@ -93,7 +93,7 @@ export class EventWiring {
     this.subscriptions.push({
       event,
       description: description ?? `Custom handler for ${event}`,
-      unsubscribe
+      unsubscribe,
     });
 
     this.log(`Added listener for '${event}'`);
@@ -109,7 +109,7 @@ export class EventWiring {
     this.subscriptions.push({
       event,
       description: description ?? `One-time handler for ${event}`,
-      unsubscribe
+      unsubscribe,
     });
 
     this.log(`Added one-time listener for '${event}'`);
@@ -137,7 +137,7 @@ export class EventWiring {
   emitBootstrapComplete(context: BootstrapContext): void {
     this.emit(EVENTS.BOOTSTRAP_COMPLETE, {
       timestamp: Date.now(),
-      services: Object.keys(context).length
+      services: Object.keys(context).length,
     });
     this.log('Emitted bootstrap complete event');
   }
@@ -148,7 +148,7 @@ export class EventWiring {
   emitBootstrapError(error: Error): void {
     this.emit(EVENTS.BOOTSTRAP_ERROR, {
       timestamp: Date.now(),
-      error: error.message
+      error: error.message,
     });
     this.log(`Emitted bootstrap error event: ${error.message}`);
   }

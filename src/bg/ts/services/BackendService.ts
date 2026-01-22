@@ -74,7 +74,7 @@ export class BackendService {
   private state: BackendServiceState = {
     options: null,
     initialized: false,
-    dictionariesLoaded: false
+    dictionariesLoaded: false,
   };
 
   constructor(
@@ -94,12 +94,12 @@ export class BackendService {
     this.tabManager = createTabManager({ debug: this.debug });
     this.sandboxBridge = createSandboxBridge({
       debug: this.debug,
-      readyTimeout: config.sandboxReadyTimeout
+      readyTimeout: config.sandboxReadyTimeout,
     });
     this.chromeEventHandler = createChromeEventHandler({
       debug: this.debug,
       installUrl: config.installUrl,
-      updateUrl: config.updateUrl
+      updateUrl: config.updateUrl,
     });
   }
 
@@ -164,7 +164,7 @@ export class BackendService {
       this.state.options = {
         ...this.state.options,
         dictSelected: result.dictSelected,
-        dictNamelist: result.dictNamelist
+        dictNamelist: result.dictNamelist,
       };
 
       this.state.dictionariesLoaded = true;
@@ -261,7 +261,7 @@ export class BackendService {
     if (!this.state.options) {
       return {
         success: false,
-        error: 'Options not loaded'
+        error: 'Options not loaded',
       };
     }
 
@@ -269,7 +269,7 @@ export class BackendService {
     if (!ankiService) {
       return {
         success: false,
-        error: 'No Anki service configured'
+        error: 'No Anki service configured',
       };
     }
 
@@ -288,13 +288,13 @@ export class BackendService {
       definitions: this.state.options.definitions,
       sentence: this.state.options.sentence,
       url: this.state.options.url,
-      audio: this.state.options.audio
+      audio: this.state.options.audio,
     });
 
     if (!note) {
       return {
         success: false,
-        error: 'Failed to format note - check deck, type, and field configuration'
+        error: 'Failed to format note - check deck, type, and field configuration',
       };
     }
 

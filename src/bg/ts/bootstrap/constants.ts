@@ -29,13 +29,13 @@ export const SERVICE_NAMES = {
   DICTIONARY_HANDLER: 'dictionaryHandler',
   AUDIO_HANDLER: 'audioHandler',
   TRANSLATION_HANDLER: 'translationHandler',
-  NOTE_HANDLER: 'noteHandler'
+  NOTE_HANDLER: 'noteHandler',
 } as const;
 
 /**
  * Service name type
  */
-export type ServiceName = typeof SERVICE_NAMES[keyof typeof SERVICE_NAMES];
+export type ServiceName = (typeof SERVICE_NAMES)[keyof typeof SERVICE_NAMES];
 
 /**
  * Event names for EventBus
@@ -76,13 +76,13 @@ export const EVENTS = {
   // Bootstrap events
   BOOTSTRAP_STARTED: 'bootstrap:started',
   BOOTSTRAP_COMPLETE: 'bootstrap:complete',
-  BOOTSTRAP_ERROR: 'bootstrap:error'
+  BOOTSTRAP_ERROR: 'bootstrap:error',
 } as const;
 
 /**
  * Event name type
  */
-export type EventName = typeof EVENTS[keyof typeof EVENTS];
+export type EventName = (typeof EVENTS)[keyof typeof EVENTS];
 
 /**
  * Message actions handled by the router
@@ -115,10 +115,10 @@ export const MESSAGE_ACTIONS = {
   DEINFLECT: 'Deinflect',
   GET_BUILTIN: 'getBuiltin',
   GET_LOCALE: 'getLocale',
-  IS_CONNECTED: 'isConnected'
+  IS_CONNECTED: 'isConnected',
 } as const;
 
 /**
  * Message action type
  */
-export type MessageAction = typeof MESSAGE_ACTIONS[keyof typeof MESSAGE_ACTIONS];
+export type MessageAction = (typeof MESSAGE_ACTIONS)[keyof typeof MESSAGE_ACTIONS];

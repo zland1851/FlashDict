@@ -119,10 +119,7 @@ class ODHBackground {
   /**
    * Send message to sandbox iframe
    */
-  private async sendToSandbox(
-    action: string,
-    params: Record<string, unknown>
-  ): Promise<unknown> {
+  private async sendToSandbox(action: string, params: Record<string, unknown>): Promise<unknown> {
     return new Promise((resolve, reject) => {
       // Wait for agent to be ready
       if (!this.agent) {
@@ -188,7 +185,7 @@ class ODHBackground {
       const result = await this.sendToServiceWorker({
         action,
         params,
-        target: 'serviceworker'
+        target: 'serviceworker',
       });
       this.callback(result, callbackId);
     } catch (err) {

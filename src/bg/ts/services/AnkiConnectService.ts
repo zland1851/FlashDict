@@ -94,7 +94,7 @@ export class AnkiConnectService implements IAnkiService {
     const request = {
       action,
       version: this.version,
-      params
+      params,
     };
 
     try {
@@ -104,22 +104,19 @@ export class AnkiConnectService implements IAnkiService {
       const response = await this.fetchFn(this.baseUrl, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json; charset=utf-8'
+          'Content-Type': 'application/json; charset=utf-8',
         },
         body: JSON.stringify(request),
-        signal: controller.signal
+        signal: controller.signal,
       });
 
       clearTimeout(timeoutId);
 
       if (!response.ok) {
-        throw new AnkiConnectError(
-          `HTTP error: ${response.status} ${response.statusText}`,
-          action
-        );
+        throw new AnkiConnectError(`HTTP error: ${response.status} ${response.statusText}`, action);
       }
 
-      const responseData = await response.json() as AnkiConnectResponse<T>;
+      const responseData = (await response.json()) as AnkiConnectResponse<T>;
 
       // Validate response structure
       this.validateResponse(responseData, action);
@@ -173,7 +170,7 @@ export class AnkiConnectService implements IAnkiService {
     if (!note) {
       return {
         success: false,
-        error: 'Note is required'
+        error: 'Note is required',
       };
     }
 
@@ -183,13 +180,13 @@ export class AnkiConnectService implements IAnkiService {
       if (noteId === null) {
         return {
           success: false,
-          error: 'Failed to add note'
+          error: 'Failed to add note',
         };
       }
 
       return {
         success: true,
-        noteId
+        noteId,
       };
     } catch (error) {
       if (error instanceof AnkiConnectError) {
@@ -197,18 +194,18 @@ export class AnkiConnectService implements IAnkiService {
         if (error.message.includes('duplicate') || error.message.includes('cannot create')) {
           return {
             success: false,
-            error: 'Duplicate note'
+            error: 'Duplicate note',
           };
         }
         return {
           success: false,
-          error: error.message
+          error: error.message,
         };
       }
 
       return {
         success: false,
-        error: 'Unknown error adding note'
+        error: 'Unknown error adding note',
       };
     }
   }
@@ -296,7 +293,9 @@ export class AnkiConnectService implements IAnkiService {
       return [];
     }
 
-    const result = await this.invokeQuiet<Record<string, unknown>[]>('notesInfo', { notes: noteIds });
+    const result = await this.invokeQuiet<Record<string, unknown>[]>('notesInfo', {
+      notes: noteIds,
+    });
     return result ?? [];
   }
 
@@ -313,7 +312,7 @@ export class AnkiConnectService implements IAnkiService {
 
     return await this.invokeQuiet<string>('storeMediaFile', {
       filename,
-      data
+      data,
     });
   }
 
@@ -330,7 +329,7 @@ export class AnkiConnectService implements IAnkiService {
 
     return await this.invokeQuiet<string>('storeMediaFile', {
       filename,
-      url
+      url,
     });
   }
 
@@ -340,26 +339,17 @@ export class AnkiConnectService implements IAnkiService {
   private validateResponse<T>(response: AnkiConnectResponse<T>, action: string): void {
     // Check for required fields first (more specific errors)
     if (!Object.prototype.hasOwnProperty.call(response, 'error')) {
-      throw new AnkiConnectError(
-        'Response is missing required error field',
-        action
-      );
+      throw new AnkiConnectError('Response is missing required error field', action);
     }
 
     if (!Object.prototype.hasOwnProperty.call(response, 'result')) {
-      throw new AnkiConnectError(
-        'Response is missing required result field',
-        action
-      );
+      throw new AnkiConnectError('Response is missing required result field', action);
     }
 
     // Check for unexpected extra fields
     const keys = Object.getOwnPropertyNames(response);
     if (keys.length !== 2) {
-      throw new AnkiConnectError(
-        'Response has an unexpected number of fields',
-        action
-      );
+      throw new AnkiConnectError('Response has an unexpected number of fields', action);
     }
   }
 }

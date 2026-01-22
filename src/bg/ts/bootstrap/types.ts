@@ -57,11 +57,8 @@ export interface MessageHandlers {
  * Complete bootstrap context
  * Contains all initialized services and handlers
  */
-export interface BootstrapContext extends
-  CoreServices,
-  ManagerServices,
-  AnkiServices,
-  MessageHandlers {}
+export interface BootstrapContext
+  extends CoreServices, ManagerServices, AnkiServices, MessageHandlers {}
 
 /**
  * Bootstrap configuration options

@@ -6,13 +6,16 @@
 /**
  * Sanitize string for safe logging (remove sensitive data)
  */
-export function sanitizeForLog(value: unknown, sensitiveKeys: string[] = ['password', 'id']): unknown {
+export function sanitizeForLog(
+  value: unknown,
+  sensitiveKeys: string[] = ['password', 'id']
+): unknown {
   if (typeof value !== 'object' || value === null) {
     return value;
   }
 
   if (Array.isArray(value)) {
-    return value.map(item => sanitizeForLog(item, sensitiveKeys));
+    return value.map((item) => sanitizeForLog(item, sensitiveKeys));
   }
 
   const result: Record<string, unknown> = {};

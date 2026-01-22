@@ -54,7 +54,10 @@ export interface EventBusOptions {
  * Error thrown when max handlers exceeded
  */
 export class MaxHandlersExceededError extends Error {
-  constructor(public readonly eventName: string, public readonly maxHandlers: number) {
+  constructor(
+    public readonly eventName: string,
+    public readonly maxHandlers: number
+  ) {
     super(`Maximum handlers (${maxHandlers}) exceeded for event '${eventName}'`);
     this.name = 'MaxHandlersExceededError';
   }
@@ -73,7 +76,7 @@ export class EventBus {
     this.options = {
       debug: options.debug ?? false,
       maxHandlers: options.maxHandlers ?? 0,
-      catchErrors: options.catchErrors ?? true
+      catchErrors: options.catchErrors ?? true,
     };
   }
 
@@ -91,7 +94,7 @@ export class EventBus {
   ): Unsubscribe {
     const fullOptions: Required<SubscriptionOptions> = {
       once: options.once ?? false,
-      priority: options.priority ?? 0
+      priority: options.priority ?? 0,
     };
 
     let eventHandlers = this.handlers.get(eventName);
@@ -109,11 +112,11 @@ export class EventBus {
     const entry: HandlerEntry = {
       handler: handler as EventHandler<unknown>,
       options: fullOptions,
-      id: this.nextHandlerId++
+      id: this.nextHandlerId++,
     };
 
     // Insert in priority order (higher priority first)
-    const insertIndex = eventHandlers.findIndex(h => h.options.priority < fullOptions.priority);
+    const insertIndex = eventHandlers.findIndex((h) => h.options.priority < fullOptions.priority);
     if (insertIndex === -1) {
       eventHandlers.push(entry);
     } else {
@@ -146,7 +149,7 @@ export class EventBus {
     const eventHandlers = this.handlers.get(eventName);
     if (!eventHandlers) return false;
 
-    const index = eventHandlers.findIndex(h => h.id === handlerId);
+    const index = eventHandlers.findIndex((h) => h.id === handlerId);
     if (index === -1) return false;
 
     eventHandlers.splice(index, 1);

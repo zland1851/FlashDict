@@ -185,8 +185,6 @@ export class ChromeEventHandler {
 /**
  * Create ChromeEventHandler instance
  */
-export function createChromeEventHandler(
-  config?: ChromeEventHandlerConfig
-): ChromeEventHandler {
+export function createChromeEventHandler(config?: ChromeEventHandlerConfig): ChromeEventHandler {
   return new ChromeEventHandler(config);
 }

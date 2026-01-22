@@ -15,7 +15,11 @@ import { createNoteFormatterService } from '../services/NoteFormatterService';
 import { createOptionsHandler } from '../handlers/OptionsHandler';
 import { createDictionaryHandler } from '../handlers/DictionaryHandler';
 import { createAudioHandler } from '../handlers/AudioHandler';
-import { createCredentialManager, type CredentialManager, AnkiWebCredentials } from '../security/CredentialManager';
+import {
+  createCredentialManager,
+  type CredentialManager,
+  AnkiWebCredentials,
+} from '../security/CredentialManager';
 import { SERVICE_NAMES } from './constants';
 import type { ServiceFactoryConfig, ManagerServices, AnkiServices, MessageHandlers } from './types';
 
@@ -41,26 +45,20 @@ export class ServiceFactory {
 
     // Create OptionsManager
     const optionsManager = createOptionsManager();
-    this.container.registerSingleton(
-      SERVICE_NAMES.OPTIONS_MANAGER,
-      () => optionsManager
-    );
+    this.container.registerSingleton(SERVICE_NAMES.OPTIONS_MANAGER, () => optionsManager);
 
     // Create CredentialManager
     const credentialManager = createCredentialManager({
       defaultExpiryMs: config?.credentialExpiryMs ?? 0,
-      debug: this.debug
+      debug: this.debug,
     });
-    this.container.registerSingleton(
-      SERVICE_NAMES.CREDENTIAL_MANAGER,
-      () => credentialManager
-    );
+    this.container.registerSingleton(SERVICE_NAMES.CREDENTIAL_MANAGER, () => credentialManager);
 
     this.log('Manager services created');
 
     return {
       optionsManager,
-      credentialManager
+      credentialManager,
     };
   }
 
@@ -72,10 +70,7 @@ export class ServiceFactory {
 
     // Create AnkiConnectService
     const ankiConnectService = createAnkiConnectService();
-    this.container.registerSingleton(
-      SERVICE_NAMES.ANKI_CONNECT,
-      () => ankiConnectService
-    );
+    this.container.registerSingleton(SERVICE_NAMES.ANKI_CONNECT, () => ankiConnectService);
 
     // Create AnkiWebService with credential integration
     const ankiWebCredentials = new AnkiWebCredentials(credentialManager);
@@ -83,26 +78,20 @@ export class ServiceFactory {
 
     const ankiWebService = createAnkiWebService({
       id: credentials?.username ?? '',
-      password: credentials?.password ?? ''
+      password: credentials?.password ?? '',
     });
-    this.container.registerSingleton(
-      SERVICE_NAMES.ANKI_WEB,
-      () => ankiWebService
-    );
+    this.container.registerSingleton(SERVICE_NAMES.ANKI_WEB, () => ankiWebService);
 
     // Create NoteFormatterService
     const noteFormatterService = createNoteFormatterService();
-    this.container.registerSingleton(
-      SERVICE_NAMES.NOTE_FORMATTER,
-      () => noteFormatterService
-    );
+    this.container.registerSingleton(SERVICE_NAMES.NOTE_FORMATTER, () => noteFormatterService);
 
     this.log('Anki services created');
 
     return {
       ankiConnectService,
       ankiWebService,
-      noteFormatterService
+      noteFormatterService,
     };
   }
 
@@ -114,31 +103,22 @@ export class ServiceFactory {
 
     // Create OptionsHandler
     const optionsHandler = createOptionsHandler(optionsManager);
-    this.container.registerSingleton(
-      SERVICE_NAMES.OPTIONS_HANDLER,
-      () => optionsHandler
-    );
+    this.container.registerSingleton(SERVICE_NAMES.OPTIONS_HANDLER, () => optionsHandler);
 
     // Create DictionaryHandler
     const dictionaryHandler = createDictionaryHandler(new Map());
-    this.container.registerSingleton(
-      SERVICE_NAMES.DICTIONARY_HANDLER,
-      () => dictionaryHandler
-    );
+    this.container.registerSingleton(SERVICE_NAMES.DICTIONARY_HANDLER, () => dictionaryHandler);
 
     // Create AudioHandler
     const audioHandler = createAudioHandler();
-    this.container.registerSingleton(
-      SERVICE_NAMES.AUDIO_HANDLER,
-      () => audioHandler
-    );
+    this.container.registerSingleton(SERVICE_NAMES.AUDIO_HANDLER, () => audioHandler);
 
     this.log('Message handlers created');
 
     return {
       optionsHandler,
       dictionaryHandler,
-      audioHandler
+      audioHandler,
     };
   }
 
@@ -157,7 +137,7 @@ export class ServiceFactory {
     return {
       managers,
       ankiServices,
-      handlers
+      handlers,
     };
   }
 

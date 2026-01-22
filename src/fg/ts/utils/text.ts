@@ -7,7 +7,7 @@
 const HTML_TAGS_TO_REPLACE: Record<string, string> = {
   '&': '&amp;',
   '<': '&lt;',
-  '>': '&gt;'
+  '>': '&gt;',
 };
 
 /**
@@ -146,31 +146,36 @@ export function cutSentence(
 
   if (sentenceNum > 0) {
     // Split text into sentences
-    const matchResult = sentence.match(/((?![.!?;:。！？]['"'"]?\s).|\n)*[.!?;:。！？]['"'"]?(\s|.*$)/g);
+    const matchResult = sentence.match(
+      /((?![.!?;:。！？]['"'"]?\s).|\n)*[.!?;:。！？]['"'"]?(\s|.*$)/g
+    );
     let sentences: string[];
 
     if (matchResult && matchResult.length > 1) {
       // Merge sentences that end with abbreviations (e.g., "Dr.", "Mr.")
-      const reduced = matchResult.reduceRight((accumulation: string[], current: string) => {
-        if (current.search(/\.\w{0,3}\.\s$/g) !== -1) {
-          if (accumulation[0]) {
-            accumulation[0] = current + accumulation[0];
+      const reduced = matchResult.reduceRight(
+        (accumulation: string[], current: string) => {
+          if (current.search(/\.\w{0,3}\.\s$/g) !== -1) {
+            if (accumulation[0]) {
+              accumulation[0] = current + accumulation[0];
+            } else {
+              accumulation.unshift(current);
+            }
           } else {
             accumulation.unshift(current);
           }
-        } else {
-          accumulation.unshift(current);
-        }
-        return accumulation;
-      }, ['']);
-      sentences = reduced.filter(x => x.length > 0);
+          return accumulation;
+        },
+        ['']
+      );
+      sentences = reduced.filter((x) => x.length > 0);
     } else {
       sentences = [sentence];
     }
 
     // Find the sentence containing the word at the exact offset
     let currentOffset = offset;
-    let index = sentences.findIndex(ele => {
+    let index = sentences.findIndex((ele) => {
       if (ele.indexOf(word) !== -1) {
         const positions = searchAll(ele, word);
         if (positions.indexOf(currentOffset) !== -1) {
@@ -183,7 +188,7 @@ export function cutSentence(
 
     // Fallback: find any sentence containing the word
     if (index === -1) {
-      index = sentences.findIndex(ele => ele.indexOf(word) !== -1);
+      index = sentences.findIndex((ele) => ele.indexOf(word) !== -1);
     }
 
     if (index === -1) {
@@ -193,7 +198,7 @@ export function cutSentence(
     // Calculate range of sentences to include
     const left = Math.ceil((sentenceNum - 1) / 2);
     let start = index - left;
-    let end = index + ((sentenceNum - 1) - left);
+    let end = index + (sentenceNum - 1 - left);
 
     if (start < 0) {
       start = 0;
@@ -300,9 +305,7 @@ export function getPDFNode(node: Node): { sentence: string; offset: number } {
   // Build sentence from nodes
   let sentence = '';
   let offset = 0;
-  const filteredNodes = sentenceNodes.filter(n =>
-    n.textContent !== '' && n.textContent !== '-'
-  );
+  const filteredNodes = sentenceNodes.filter((n) => n.textContent !== '' && n.textContent !== '-');
 
   for (const n of filteredNodes) {
     if (backwardIndex === 0) {
@@ -318,9 +321,7 @@ export function getPDFNode(node: Node): { sentence: string; offset: number } {
       sentence = sentence.slice(0, -1);
     } else {
       const endsWithHyphen = nodeText[nodeText.length - 1] === '-';
-      sentence += endsWithHyphen
-        ? nodeText.slice(0, -1)
-        : nodeText + ' ';
+      sentence += endsWithHyphen ? nodeText.slice(0, -1) : nodeText + ' ';
     }
   }
 
@@ -370,7 +371,7 @@ export function getSentence(sentenceNum: number): string | undefined {
   }
 
   const range = selection.getRangeAt(0);
-  let node: Node = range.commonAncestorContainer;
+  const node: Node = range.commonAncestorContainer;
 
   // Skip if selection is in input or textarea
   const tagName = (node as Element).tagName?.toUpperCase();

@@ -4,14 +4,8 @@
  * Implements IMessageHandler for MessageRouter system
  */
 
-import {
-  IMessageHandler,
-  MessageSender
-} from '../interfaces/IMessageHandler';
-import {
-  IDictionary,
-  DictionaryDefinition
-} from '../interfaces/IDictionary';
+import { IMessageHandler, MessageSender } from '../interfaces/IMessageHandler';
+import { IDictionary, DictionaryDefinition } from '../interfaces/IDictionary';
 
 /**
  * Dictionary handler messages
@@ -27,7 +21,10 @@ export interface DictionaryHandlerParams {
  * Dictionary Handler
  * Handles dictionary lookup and term finding messages
  */
-export class DictionaryHandler implements IMessageHandler<DictionaryHandlerParams, DictionaryDefinition | null | string> {
+export class DictionaryHandler implements IMessageHandler<
+  DictionaryHandlerParams,
+  DictionaryDefinition | null | string
+> {
   constructor(private readonly dictionaries: Map<string, IDictionary>) {}
 
   /**
@@ -78,10 +75,7 @@ export class DictionaryHandler implements IMessageHandler<DictionaryHandlerParam
    * @returns true if this handler can handle
    */
   canHandle(action: string): boolean {
-    const handledActions = [
-      'findTerm',
-      'getTranslation'
-    ];
+    const handledActions = ['findTerm', 'getTranslation'];
     return handledActions.includes(action);
   }
 
@@ -143,8 +137,6 @@ export class DictionaryHandler implements IMessageHandler<DictionaryHandlerParam
  * @param dictionaries - Map of dictionary name to instance
  * @returns DictionaryHandler instance
  */
-export function createDictionaryHandler(
-  dictionaries: Map<string, IDictionary>
-): DictionaryHandler {
+export function createDictionaryHandler(dictionaries: Map<string, IDictionary>): DictionaryHandler {
   return new DictionaryHandler(dictionaries);
 }

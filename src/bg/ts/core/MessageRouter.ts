@@ -10,7 +10,7 @@ import {
   Message,
   MessageResponse,
   MessageSender,
-  isMessageHandler
+  isMessageHandler,
 } from '../interfaces/IMessageHandler';
 
 /**
@@ -79,8 +79,8 @@ export class MessageRouter implements IMessageRouter {
       throwOnUnknown: options.throwOnUnknown ?? true,
       defaultResponse: options.defaultResponse ?? {
         success: false,
-        error: 'Unknown action'
-      }
+        error: 'Unknown action',
+      },
     };
   }
 
@@ -182,14 +182,14 @@ export class MessageRouter implements IMessageRouter {
         const result = await handler.handle(message.params, sender);
         return {
           success: true,
-          data: result as T
+          data: result as T,
         };
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         this.log(`Handler error for '${action}': ${errorMessage}`);
         return {
           success: false,
-          error: errorMessage
+          error: errorMessage,
         };
       }
     };
@@ -219,10 +219,8 @@ export class MessageRouter implements IMessageRouter {
     if (!currentMiddleware) {
       return finalHandler();
     }
-    return currentMiddleware(
-      message,
-      sender,
-      () => this.executeMiddlewareChain(message, sender, finalHandler, index + 1)
+    return currentMiddleware(message, sender, () =>
+      this.executeMiddlewareChain(message, sender, finalHandler, index + 1)
     ) as Promise<MessageResponse<T>>;
   }
 
@@ -266,7 +264,7 @@ export function createHandler<TParams = unknown, TResponse = unknown>(
 ): IMessageHandler<TParams, TResponse> {
   return {
     handle: handleFn,
-    canHandle: (a: string) => a === action
+    canHandle: (a: string) => a === action,
   };
 }
 
@@ -285,7 +283,9 @@ export function createLoggingMiddleware(
     const response = await next();
 
     const duration = Date.now() - start;
-    logger(`[${message.action}] Response: ${response.success ? 'success' : 'error'} (${duration}ms)`);
+    logger(
+      `[${message.action}] Response: ${response.success ? 'success' : 'error'} (${duration}ms)`
+    );
 
     return response;
   };
@@ -306,13 +306,12 @@ export function createValidationMiddleware(
       return next();
     }
 
-    const errorMessage = typeof validationResult === 'string'
-      ? validationResult
-      : 'Message validation failed';
+    const errorMessage =
+      typeof validationResult === 'string' ? validationResult : 'Message validation failed';
 
     return {
       success: false,
-      error: errorMessage
+      error: errorMessage,
     };
   };
 }
@@ -344,7 +343,7 @@ export function createRateLimitMiddleware(
     if (record.count > maxRequests) {
       return {
         success: false,
-        error: 'Rate limit exceeded'
+        error: 'Rate limit exceeded',
       };
     }
 

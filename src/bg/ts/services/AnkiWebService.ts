@@ -4,11 +4,7 @@
  * Uses fetch API for HTTP requests (compatible with Service Worker)
  */
 
-import {
-  IAnkiService,
-  AnkiNote,
-  AddNoteResult
-} from '../interfaces/IAnkiService';
+import { IAnkiService, AnkiNote, AddNoteResult } from '../interfaces/IAnkiService';
 
 /**
  * AnkiWeb profile information
@@ -125,7 +121,10 @@ export class AnkiWebService implements IAnkiService {
    * @param forceLogout - Force logout before connecting
    * @returns Promise resolving when connected
    */
-  async initConnection(options: { id: string; password: string }, forceLogout: boolean = false): Promise<void> {
+  async initConnection(
+    options: { id: string; password: string },
+    forceLogout: boolean = false
+  ): Promise<void> {
     this.id = options.id;
     this.password = options.password;
     const retryCount = 1;
@@ -153,14 +152,14 @@ export class AnkiWebService implements IAnkiService {
     if (!note) {
       return {
         success: false,
-        error: 'Note is required'
+        error: 'Note is required',
       };
     }
 
     if (!this.profile) {
       return {
         success: false,
-        error: 'Not connected to AnkiWeb'
+        error: 'Not connected to AnkiWeb',
       };
     }
 
@@ -170,18 +169,18 @@ export class AnkiWebService implements IAnkiService {
       if (result === null) {
         return {
           success: false,
-          error: 'Failed to save note to AnkiWeb'
+          error: 'Failed to save note to AnkiWeb',
         };
       }
 
       return {
-        success: true
+        success: true,
       };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       return {
         success: false,
-        error: errorMessage
+        error: errorMessage,
       };
     }
   }
@@ -222,20 +221,15 @@ export class AnkiWebService implements IAnkiService {
    */
   private async apiConnect(forceLogout: boolean = false): Promise<AnkiWebConnectResponse> {
     try {
-      const url = forceLogout
-        ? `${this.baseUrl}/account/logout`
-        : 'https://ankiuser.net/edit/';
+      const url = forceLogout ? `${this.baseUrl}/account/logout` : 'https://ankiuser.net/edit/';
 
       const response = await this.fetchFn(url, {
         method: 'GET',
-        credentials: 'include'
+        credentials: 'include',
       });
 
       if (!response.ok) {
-        throw new AnkiWebError(
-          `HTTP error: ${response.status} ${response.statusText}`,
-          'connect'
-        );
+        throw new AnkiWebError(`HTTP error: ${response.status} ${response.statusText}`, 'connect');
       }
 
       const result = await response.text();
@@ -256,13 +250,13 @@ export class AnkiWebService implements IAnkiService {
         case 'Add':
           return {
             action: 'edit',
-            data: await this.parseData(result)
+            data: await this.parseData(result),
           };
         case 'Log in':
           const token = doc.querySelector('input[name=csrf_token]');
           return {
             action: 'login',
-            data: token?.getAttribute('value') ?? ''
+            data: token?.getAttribute('value') ?? '',
           };
         default:
           throw new AnkiWebError('Unexpected page title', 'connect');
@@ -297,10 +291,10 @@ export class AnkiWebService implements IAnkiService {
       const response = await this.fetchFn(`${this.baseUrl}/account/login`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
+          'Content-Type': 'application/x-www-form-urlencoded',
         },
         body: formData.toString(),
-        credentials: 'include'
+        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -318,7 +312,7 @@ export class AnkiWebService implements IAnkiService {
 
       const firstTitle = title[0];
       return firstTitle?.innerText === 'Decks';
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   }
@@ -349,10 +343,10 @@ export class AnkiWebService implements IAnkiService {
       const response = await this.fetchFn('https://ankiuser.net/edit/save', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
+          'Content-Type': 'application/x-www-form-urlencoded',
         },
         body: formData.toString(),
-        credentials: 'include'
+        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -360,7 +354,7 @@ export class AnkiWebService implements IAnkiService {
       }
 
       return await response.text();
-    } catch (error) {
+    } catch (_error) {
       return null;
     }
   }
@@ -383,13 +377,13 @@ export class AnkiWebService implements IAnkiService {
       } else if (
         resp.action === 'login' &&
         retryCount > 0 &&
-        await this.apiLogin(this.id, this.password, resp.data as string)
+        (await this.apiLogin(this.id, this.password, resp.data as string))
       ) {
         return this.getProfile(retryCount - 1);
       }
 
       return null;
-    } catch (error) {
+    } catch (_error) {
       return null;
     }
   }
@@ -414,7 +408,7 @@ export class AnkiWebService implements IAnkiService {
       }
 
       return null;
-    } catch (error) {
+    } catch (_error) {
       return null;
     }
   }
@@ -427,15 +421,15 @@ export class AnkiWebService implements IAnkiService {
     try {
       const response = await this.fetchFn('https://ankiuser.net/edit/getAddInfo', {
         method: 'GET',
-        credentials: 'include'
+        credentials: 'include',
       });
 
       if (!response.ok) {
         return null;
       }
 
-      return await response.json() as AnkiWebAddInfo;
-    } catch (error) {
+      return (await response.json()) as AnkiWebAddInfo;
+    } catch (_error) {
       return null;
     }
   }
@@ -451,7 +445,7 @@ export class AnkiWebService implements IAnkiService {
         `https://ankiuser.net/edit/getNotetypeFields?ntid=${nid}`,
         {
           method: 'GET',
-          credentials: 'include'
+          credentials: 'include',
         }
       );
 
@@ -459,8 +453,8 @@ export class AnkiWebService implements IAnkiService {
         return null;
       }
 
-      return await response.json() as AnkiWebNoteTypeFields;
-    } catch (error) {
+      return (await response.json()) as AnkiWebNoteTypeFields;
+    } catch (_error) {
       return null;
     }
   }
@@ -513,7 +507,7 @@ export class AnkiWebService implements IAnkiService {
       modelnames,
       modelids,
       modelfieldnames,
-      token
+      token,
     };
   }
 }

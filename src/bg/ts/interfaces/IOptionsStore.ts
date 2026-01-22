@@ -151,7 +151,7 @@ export const DEFAULT_OPTIONS: ExtensionOptions = {
   sysscripts: 'encn_Cambridge,encn_Collins,encn_LDOCE5MDX,encn_Oxford,encn_Youdao',
   udfscripts: '',
   dictSelected: '',
-  dictNamelist: []
+  dictNamelist: [],
 };
 
 /**
@@ -182,8 +182,8 @@ export function validateOptions(obj: unknown): obj is ExtensionOptions {
     'services',
     'deckname',
     'typename',
-    'expression'
+    'expression',
   ];
 
-  return requiredKeys.every(key => key in opts);
+  return requiredKeys.every((key) => key in opts);
 }

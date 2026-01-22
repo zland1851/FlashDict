@@ -127,8 +127,5 @@ export type MessageType =
 export function isMessageHandler(obj: unknown): obj is IMessageHandler {
   if (!obj || typeof obj !== 'object') return false;
   const handler = obj as IMessageHandler;
-  return (
-    typeof handler.handle === 'function' &&
-    typeof handler.canHandle === 'function'
-  );
+  return typeof handler.handle === 'function' && typeof handler.canHandle === 'function';
 }

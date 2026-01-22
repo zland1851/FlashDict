@@ -78,7 +78,7 @@ export class Container {
   constructor(options: ContainerOptions = {}) {
     this.options = {
       allowOverwrite: options.allowOverwrite ?? false,
-      debug: options.debug ?? false
+      debug: options.debug ?? false,
     };
   }
 
@@ -88,11 +88,7 @@ export class Container {
    * @param factory - Factory function to create the service
    * @param scope - Lifecycle scope (default: singleton)
    */
-  register<T>(
-    name: string,
-    factory: ServiceFactoryFn<T>,
-    scope: ServiceScope = 'singleton'
-  ): this {
+  register<T>(name: string, factory: ServiceFactoryFn<T>, scope: ServiceScope = 'singleton'): this {
     if (this.services.has(name) && !this.options.allowOverwrite) {
       throw new ServiceAlreadyRegisteredError(name);
     }
@@ -100,7 +96,7 @@ export class Container {
     this.services.set(name, {
       factory: factory as ServiceFactoryFn<unknown>,
       scope,
-      instance: undefined
+      instance: undefined,
     });
 
     this.log(`Registered service: ${name} (${scope})`);
@@ -138,7 +134,7 @@ export class Container {
     this.services.set(name, {
       factory: () => instance,
       scope: 'singleton',
-      instance
+      instance,
     });
 
     this.log(`Registered instance: ${name}`);
@@ -250,7 +246,7 @@ export class Container {
   createChild(options?: ContainerOptions): Container {
     const child = new Container({
       ...this.options,
-      ...options
+      ...options,
     });
 
     // Copy registrations to child (shallow copy - they share factories)

@@ -14,7 +14,9 @@ const ALLOWED_SCRIPT_PROTOCOLS = ['http:', 'https:'] as const;
 /**
  * Validate URL with allowed protocols
  */
-export function isUrl(allowedProtocols: readonly string[] = ['http:', 'https:']): ValidatorFn<string> {
+export function isUrl(
+  allowedProtocols: readonly string[] = ['http:', 'https:']
+): ValidatorFn<string> {
   return (value: unknown): ValidationResult<string> => {
     if (typeof value !== 'string') {
       return { success: false, error: 'Expected string URL' };
@@ -25,7 +27,7 @@ export function isUrl(allowedProtocols: readonly string[] = ['http:', 'https:'])
       if (!allowedProtocols.includes(url.protocol)) {
         return {
           success: false,
-          error: `URL protocol must be one of: ${allowedProtocols.join(', ')}`
+          error: `URL protocol must be one of: ${allowedProtocols.join(', ')}`,
         };
       }
       return { success: true, data: value };
@@ -70,7 +72,7 @@ export function isFetchUrl(value: unknown): ValidationResult<string> {
     if (!allowedProtocols.includes(url.protocol)) {
       return {
         success: false,
-        error: `URL protocol must be one of: ${allowedProtocols.join(', ')}`
+        error: `URL protocol must be one of: ${allowedProtocols.join(', ')}`,
       };
     }
     return { success: true, data: value };

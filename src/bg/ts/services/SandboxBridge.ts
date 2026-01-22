@@ -69,7 +69,7 @@ export class SandboxBridge {
       const request = {
         action,
         params,
-        target: 'background'
+        target: 'background',
       };
 
       chrome.runtime.sendMessage(request, (response) => {
@@ -138,10 +138,7 @@ export class SandboxBridge {
   async loadScript(name: string): Promise<ScriptLoadResult> {
     this.log(`Loading script: ${name}`);
 
-    const result = await this.sendToBackground<ScriptLoadResult>(
-      'loadScript',
-      { name }
-    );
+    const result = await this.sendToBackground<ScriptLoadResult>('loadScript', { name });
 
     if (!result || !result.result) {
       // Only warn for non-builtin scripts
@@ -176,10 +173,7 @@ export class SandboxBridge {
   async setScriptsOptions(options: ExtensionOptions): Promise<string | null> {
     this.log('Setting scripts options...');
 
-    const result = await this.sendToBackground<string>(
-      'setScriptsOptions',
-      { options }
-    );
+    const result = await this.sendToBackground<string>('setScriptsOptions', { options });
 
     if (result) {
       this.log(`Scripts options set, selected: ${result}`);
@@ -194,10 +188,7 @@ export class SandboxBridge {
   async findTerm(expression: string): Promise<DictionaryLookupResult | null> {
     this.log(`Finding term: ${expression}`);
 
-    const result = await this.sendToBackground<DictionaryLookupResult>(
-      'findTerm',
-      { expression }
-    );
+    const result = await this.sendToBackground<DictionaryLookupResult>('findTerm', { expression });
 
     if (result) {
       this.log(`Found definition for: ${expression}`);
@@ -238,7 +229,7 @@ export class SandboxBridge {
       this.log('No dictionary scripts loaded');
       return {
         dictSelected: '',
-        dictNamelist: []
+        dictNamelist: [],
       };
     }
 
@@ -249,13 +240,13 @@ export class SandboxBridge {
     // Select dictionary
     const dictSelected = objectNames.includes(options.dictSelected)
       ? options.dictSelected
-      : objectNames[0] ?? '';
+      : (objectNames[0] ?? '');
 
     // Set options in sandbox
     await this.setScriptsOptions({
       ...options,
       dictSelected,
-      dictNamelist
+      dictNamelist,
     });
 
     return { dictSelected, dictNamelist };

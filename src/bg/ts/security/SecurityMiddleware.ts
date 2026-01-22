@@ -5,11 +5,7 @@
  */
 
 import { MessageSender, Message, MessageResponse } from '../interfaces/IMessageHandler';
-import {
-  validateMessage,
-  getActionValidator,
-  sanitizeForLog
-} from './Validator';
+import { validateMessage, getActionValidator, sanitizeForLog } from './Validator';
 
 /**
  * Security configuration
@@ -73,7 +69,7 @@ class RateLimiter {
     let timestamps = this.requests.get(senderId) || [];
 
     // Filter to only requests within window
-    timestamps = timestamps.filter(t => t > windowStart);
+    timestamps = timestamps.filter((t) => t > windowStart);
 
     // Check if under limit
     if (timestamps.length >= this.maxRequests) {
@@ -108,7 +104,7 @@ class RateLimiter {
     const windowStart = now - this.windowMs;
 
     for (const [senderId, timestamps] of this.requests) {
-      const filtered = timestamps.filter(t => t > windowStart);
+      const filtered = timestamps.filter((t) => t > windowStart);
       if (filtered.length === 0) {
         this.requests.delete(senderId);
       } else {
@@ -153,7 +149,7 @@ export function createSecurityMiddleware(config: SecurityConfig = {}): Middlewar
     debug = false,
     allowedExtensionIds = [],
     rateLimit = 0,
-    bypassActions = []
+    bypassActions = [],
   } = config;
 
   // Create rate limiter if configured
@@ -178,9 +174,9 @@ export function createSecurityMiddleware(config: SecurityConfig = {}): Middlewar
         sender: {
           tabId: sender.tabId,
           frameId: sender.frameId,
-          extensionId: sender.extensionId ? '[ext]' : undefined
+          extensionId: sender.extensionId ? '[ext]' : undefined,
         },
-        params: sanitizeForLog(message.params)
+        params: sanitizeForLog(message.params),
       });
     }
 
@@ -198,7 +194,7 @@ export function createSecurityMiddleware(config: SecurityConfig = {}): Middlewar
         }
         return {
           success: false,
-          error: 'Unauthorized sender'
+          error: 'Unauthorized sender',
         };
       }
     }
@@ -212,7 +208,7 @@ export function createSecurityMiddleware(config: SecurityConfig = {}): Middlewar
         }
         return {
           success: false,
-          error: 'Rate limit exceeded'
+          error: 'Rate limit exceeded',
         };
       }
     }
@@ -225,7 +221,7 @@ export function createSecurityMiddleware(config: SecurityConfig = {}): Middlewar
       }
       return {
         success: false,
-        error: 'Invalid message format'
+        error: 'Invalid message format',
       };
     }
 
@@ -239,7 +235,7 @@ export function createSecurityMiddleware(config: SecurityConfig = {}): Middlewar
         }
         return {
           success: false,
-          error: 'Invalid parameters'
+          error: 'Invalid parameters',
         };
       }
     } else if (strictValidation && !actionValidator && !bypassActions.includes(action)) {
@@ -249,7 +245,7 @@ export function createSecurityMiddleware(config: SecurityConfig = {}): Middlewar
       }
       return {
         success: false,
-        error: 'Unknown action'
+        error: 'Unknown action',
       };
     }
 
@@ -263,7 +259,7 @@ export function createSecurityMiddleware(config: SecurityConfig = {}): Middlewar
       }
       return {
         success: false,
-        error: 'Internal error'
+        error: 'Internal error',
       };
     }
   };
@@ -326,7 +322,7 @@ export function createSecurityValidationMiddleware(config: { debug?: boolean } =
   return createSecurityMiddleware({
     verifySender: false,
     strictValidation: true,
-    debug: config.debug
+    debug: config.debug,
   });
 }
 
@@ -341,7 +337,7 @@ export function createSecurityRateLimitMiddleware(
     verifySender: false,
     strictValidation: false,
     rateLimit: maxRequestsPerSecond,
-    debug: config.debug
+    debug: config.debug,
   });
 }
 
@@ -378,6 +374,6 @@ export const defaultSecurityMiddleware = createSecurityMiddleware({
   bypassActions: [
     // Actions that don't need validation (e.g., simple queries)
     'sandboxPing',
-    'sandboxReady'
-  ]
+    'sandboxReady',
+  ],
 });

@@ -60,7 +60,7 @@ export {
   // Sanitizers
   sanitizeForLog,
   sanitizeHtml,
-  sanitizeScriptName
+  sanitizeScriptName,
 } from './Validator';
 
 // Security middleware exports
@@ -77,7 +77,7 @@ export {
   createSecurityValidationMiddleware,
   createSecurityRateLimitMiddleware,
   composeMiddleware,
-  defaultSecurityMiddleware
+  defaultSecurityMiddleware,
 } from './SecurityMiddleware';
 
 // Credential manager exports
@@ -94,5 +94,5 @@ export {
   createCredentialManager,
   getCredentialManager,
   setCredentialManager,
-  resetCredentialManager
+  resetCredentialManager,
 } from './CredentialManager';

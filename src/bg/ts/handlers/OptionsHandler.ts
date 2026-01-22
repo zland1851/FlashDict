@@ -4,15 +4,8 @@
  * Implements IMessageHandler for MessageRouter system
  */
 
-import {
-  IMessageHandler,
-  MessageSender
-} from '../interfaces/IMessageHandler';
-import {
-  IOptionsStore,
-  ExtensionOptions,
-  PartialOptions
-} from '../interfaces/IOptionsStore';
+import { IMessageHandler, MessageSender } from '../interfaces/IMessageHandler';
+import { IOptionsStore, ExtensionOptions, PartialOptions } from '../interfaces/IOptionsStore';
 
 /**
  * Options handler messages
@@ -27,7 +20,10 @@ export interface OptionsHandlerParams {
  * Options Handler
  * Handles all options-related messages from popup and options pages
  */
-export class OptionsHandler implements IMessageHandler<OptionsHandlerParams, ExtensionOptions | { success: boolean }> {
+export class OptionsHandler implements IMessageHandler<
+  OptionsHandlerParams,
+  ExtensionOptions | { success: boolean }
+> {
   constructor(private readonly optionsStore: IOptionsStore) {}
 
   /**
@@ -36,7 +32,10 @@ export class OptionsHandler implements IMessageHandler<OptionsHandlerParams, Ext
    * @param _sender - Message sender information
    * @returns Promise resolving to response
    */
-  async handle(params: OptionsHandlerParams, _sender: MessageSender): Promise<ExtensionOptions | { success: boolean }> {
+  async handle(
+    params: OptionsHandlerParams,
+    _sender: MessageSender
+  ): Promise<ExtensionOptions | { success: boolean }> {
     if (!params) {
       throw new Error('Invalid params: params is required');
     }
@@ -74,9 +73,7 @@ export class OptionsHandler implements IMessageHandler<OptionsHandlerParams, Ext
    * @returns true if this handler can handle
    */
   canHandle(action: string): boolean {
-    const handledActions = [
-      'opt_optionsChanged'
-    ];
+    const handledActions = ['opt_optionsChanged'];
     return handledActions.includes(action);
   }
 }
