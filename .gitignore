@@ -25,8 +25,8 @@ build/
 *.tsbuildinfo
 *.zip
 
-# Store submission files
-store/
+# Store submission files (only ignore zip packages)
+store/*.zip
 
 # Logs
 *.log
