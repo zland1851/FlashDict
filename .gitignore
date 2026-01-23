@@ -25,8 +25,13 @@ build/
 *.tsbuildinfo
 *.zip
 
-# Store submission files (only ignore zip packages)
+# Store submission files (keep only PRIVACY_POLICY.md for public URL)
 store/*.zip
+store/PERMISSION_JUSTIFICATIONS.md
+store/STORE_LISTING.md
+store/STORE_LISTING_zh_CN.md
+store/STORE_LISTING_zh_TW.md
+store/SUBMISSION_CHECKLIST.md
 
 # Logs
 *.log
