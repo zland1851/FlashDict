@@ -38,6 +38,7 @@ export class AudioHandler implements IMessageHandler<AudioHandlerParams, string 
       const result = await this.sendToOffscreen({
         action: 'playAudio',
         params: { url: params.url },
+        target: 'background',
       });
 
       // Return result to callback if callbackId is present
