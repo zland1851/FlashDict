@@ -31,6 +31,10 @@ export { EventWiring, createEventWiring } from './EventWiring';
  * Bootstrap the application
  * Creates and wires all services following SOLID principles
  *
+ * Simplified 2-phase bootstrap:
+ * - Phase 1: Create all services synchronously
+ * - Phase 2: Wire events and complete
+ *
  * @param options - Bootstrap configuration
  * @returns Bootstrap context with all services
  */
@@ -49,79 +53,53 @@ export function bootstrap(options: BootstrapOptionsWithHooks = {}): BootstrapCon
   };
 
   try {
-    // Call before hook
     hooks?.onBeforeBootstrap?.();
-
     log('Starting bootstrap...');
 
-    // Phase 1: Create core infrastructure
-    log('Phase 1: Creating core infrastructure...');
-    const core = createCoreServices({ debug });
+    // ========================================
+    // Phase 1: Create all services (sync)
+    // ========================================
+    log('Phase 1: Creating services...');
 
-    // Register core services in container
+    // Create core infrastructure
+    const core = createCoreServices({ debug });
     core.container.registerSingleton(SERVICE_NAMES.CONTAINER, () => core.container);
     core.container.registerSingleton(SERVICE_NAMES.EVENT_BUS, () => core.eventBus);
     core.container.registerSingleton(SERVICE_NAMES.MESSAGE_ROUTER, () => core.messageRouter);
 
-    // Call core services hook
-    hooks?.onCoreServicesCreated?.(core);
-
-    // Phase 2: Add security middleware
+    // Add security middleware
     if (enableSecurity) {
-      log('Phase 2: Adding security middleware...');
       const securityMw = securityConfig
-        ? createSecurityMiddleware({
-            debug,
-            ...securityConfig,
-          })
+        ? createSecurityMiddleware({ debug, ...securityConfig })
         : defaultSecurityMiddleware;
       core.messageRouter.use(securityMw);
     }
-
-    // Add custom middleware
     for (const mw of middleware) {
       core.messageRouter.use(mw);
     }
 
-    // Phase 3: Create services
-    log('Phase 3: Creating services...');
+    // Create all application services
     const factory = createServiceFactory({
       debug,
       container: core.container,
       eventBus: core.eventBus,
     });
-
     const { managers, ankiServices, handlers } = factory.createAll({
       credentialExpiryMs: credentials?.defaultExpiryMs,
     });
 
-    // Partial context for hooks
-    const partialContext = {
-      ...core,
-      ...managers,
-      ...ankiServices,
-      ...handlers,
-    };
-
-    // Call services created hook
-    hooks?.onServicesCreated?.(partialContext);
-
-    // Phase 4: Register handlers
-    log('Phase 4: Registering handlers...');
-    const registry = createHandlerRegistry({
-      debug,
-      messageRouter: core.messageRouter,
-    });
+    // Register message handlers
+    const registry = createHandlerRegistry({ debug, messageRouter: core.messageRouter });
     registry.registerDefaults(handlers);
 
-    // Phase 5: Wire events
-    log('Phase 5: Wiring events...');
-    const wiring = createEventWiring({
-      debug,
-      eventBus: core.eventBus,
-    });
+    hooks?.onCoreServicesCreated?.(core);
+    hooks?.onServicesCreated?.({ ...core, ...managers, ...ankiServices, ...handlers });
 
-    // Complete context
+    // ========================================
+    // Phase 2: Wire events and complete
+    // ========================================
+    log('Phase 2: Wiring events...');
+
     const context: BootstrapContext = {
       container: core.container,
       eventBus: core.eventBus,
@@ -136,20 +114,15 @@ export function bootstrap(options: BootstrapOptionsWithHooks = {}): BootstrapCon
       audioHandler: handlers.audioHandler,
     };
 
-    // Wire events with full context
+    // Wire events
+    const wiring = createEventWiring({ debug, eventBus: core.eventBus });
     wiring.wireDefaults(context);
 
-    // Call handlers registered hook
     hooks?.onHandlersRegistered?.(context);
-
-    // Emit bootstrap complete
     wiring.emitBootstrapComplete(context);
-
-    // Call complete hook
     hooks?.onBootstrapComplete?.(context);
 
     log('Bootstrap complete!');
-
     if (debug) {
       logBootstrapSummary(context, registry);
     }

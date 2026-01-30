@@ -44,9 +44,10 @@ let builtin: Builtin | null = null;
 let deinflector: Deinflector | null = null;
 
 /**
- * Offscreen document management
+ * Offscreen document management (lazy loaded)
  */
 let creatingOffscreen: Promise<void> | null = null;
+let offscreenPath: string = '/bg/background.html';
 
 /**
  * Setup offscreen document for sandbox and audio playback
@@ -94,6 +95,14 @@ async function setupOffscreenDocument(path: string): Promise<void> {
     console.error('[ServiceWorker] Failed to setup offscreen document:', error);
     throw error;
   }
+}
+
+/**
+ * Ensure offscreen document is ready (lazy initialization)
+ * Creates the document on first call, returns immediately on subsequent calls
+ */
+async function ensureOffscreenDocument(): Promise<void> {
+  await setupOffscreenDocument(offscreenPath);
 }
 
 /**
@@ -342,8 +351,10 @@ function setupEventSubscriptions(ctx: BootstrapContext, backend: BackendService)
 
   // Subscribe to bootstrap complete
   eventBus.on(EVENTS.BOOTSTRAP_COMPLETE, async () => {
-    // Initialize dictionaries after bootstrap
+    // Initialize dictionaries after bootstrap (lazy load offscreen document)
     try {
+      // Ensure offscreen document is ready before dictionary initialization
+      await ensureOffscreenDocument();
       await backend.initializeDictionaries();
 
       // Save updated options (with dictNamelist) to storage
@@ -385,9 +396,8 @@ async function initialize(config: ServiceWorkerConfig = {}): Promise<void> {
   try {
     log('Initializing...');
 
-    // Setup offscreen document first
-    await setupOffscreenDocument(finalConfig.offscreenDocumentPath);
-    log('Offscreen document ready');
+    // Store offscreen path for lazy loading (don't create yet)
+    offscreenPath = finalConfig.offscreenDocumentPath;
 
     // Initialize builtin dictionary and deinflector
     builtin = createBuiltin();

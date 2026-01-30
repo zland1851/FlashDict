@@ -165,7 +165,6 @@ export class MessageRouter implements IMessageRouter {
 
     this.log(`Routing message: ${action}`);
 
-    // Build the handler chain with middleware
     const handler = this.handlers.get(action);
 
     if (!handler) {
@@ -180,30 +179,30 @@ export class MessageRouter implements IMessageRouter {
     const finalHandler = async (): Promise<MessageResponse<T>> => {
       try {
         const result = await handler.handle(message.params, sender);
-        return {
-          success: true,
-          data: result as T,
-        };
+        return { success: true, data: result as T };
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         this.log(`Handler error for '${action}': ${errorMessage}`);
-        return {
-          success: false,
-          error: errorMessage,
-        };
+        return { success: false, error: errorMessage };
       }
     };
 
-    // Execute middleware chain
+    // No middleware: call handler directly
     if (this.middleware.length === 0) {
       return finalHandler();
     }
 
+    // Single middleware (common case): call directly without chain overhead
+    if (this.middleware.length === 1 && this.middleware[0]) {
+      return this.middleware[0](message, sender, finalHandler) as Promise<MessageResponse<T>>;
+    }
+
+    // Multiple middleware: use chain execution
     return this.executeMiddlewareChain(message, sender, finalHandler, 0);
   }
 
   /**
-   * Execute the middleware chain recursively
+   * Execute the middleware chain (for multiple middleware)
    */
   private async executeMiddlewareChain<T>(
     message: Message,
