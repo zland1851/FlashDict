@@ -3,6 +3,7 @@
  */
 
 import { spell } from './spell.js';
+import { throttle } from './utils/throttle.js';
 
 interface MessageData {
   action: string;
@@ -39,14 +40,17 @@ function registerAddNoteLinks(): void {
       target.src = getImageSource('load');
 
       const spellContent = document.querySelector('.spell-content');
-      window.parent.postMessage({
-        action: 'addNote',
-        params: {
-          nindex: ds.nindex,
-          dindex: ds.dindex,
-          context: spellContent?.innerHTML || ''
-        }
-      }, '*');
+      window.parent.postMessage(
+        {
+          action: 'addNote',
+          params: {
+            nindex: ds.nindex,
+            dindex: ds.dindex,
+            context: spellContent?.innerHTML || '',
+          },
+        },
+        '*'
+      );
     });
   }
 }
@@ -62,13 +66,16 @@ function registerAudioLinks(): void {
       e.preventDefault();
       const target = e.currentTarget as HTMLElement;
       const ds = target.dataset;
-      window.parent.postMessage({
-        action: 'playAudio',
-        params: {
-          nindex: ds.nindex,
-          dindex: ds.dindex
-        }
-      }, '*');
+      window.parent.postMessage(
+        {
+          action: 'playAudio',
+          params: {
+            nindex: ds.nindex,
+            dindex: ds.dindex,
+          },
+        },
+        '*'
+      );
     });
   }
 }
@@ -86,12 +93,15 @@ function registerSoundLinks(): void {
       e.preventDefault();
       const target = e.currentTarget as HTMLElement;
       const ds = target.dataset;
-      window.parent.postMessage({
-        action: 'playSound',
-        params: {
-          sound: ds.sound
-        }
-      }, '*');
+      window.parent.postMessage(
+        {
+          action: 'playSound',
+          params: {
+            sound: ds.sound,
+          },
+        },
+        '*'
+      );
     });
   }
 }
@@ -212,4 +222,7 @@ function onMouseWheel(e: WheelEvent): void {
 // Initialize event listeners
 document.addEventListener('DOMContentLoaded', onDomContentLoaded, false);
 window.addEventListener('message', onMessage);
-window.addEventListener('wheel', onMouseWheel, { passive: false });
+
+// Throttle wheel events to ~60fps (16ms) for performance while keeping passive: false for preventDefault
+const throttledWheelHandler = throttle(onMouseWheel, 16);
+window.addEventListener('wheel', throttledWheelHandler, { passive: false });

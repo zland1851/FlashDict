@@ -6,6 +6,7 @@
  */
 
 import type { ExtensionOptions } from '../interfaces/IOptionsStore';
+import { withTimeoutFallback } from '../utils/timeout.js';
 
 /**
  * Message to send to content script
@@ -34,10 +35,10 @@ export class TabManager {
   }
 
   /**
-   * Send message to a specific tab
+   * Send message to a specific tab with 3 second timeout
    */
   async sendToTab(tabId: number, message: TabMessage): Promise<unknown> {
-    return new Promise((resolve) => {
+    const sendPromise = new Promise((resolve) => {
       chrome.tabs.sendMessage(tabId, message, (response) => {
         if (chrome.runtime.lastError) {
           this.log(`Error sending to tab ${tabId}: ${chrome.runtime.lastError.message}`);
@@ -47,6 +48,9 @@ export class TabManager {
         }
       });
     });
+
+    // Apply 3 second timeout to prevent blocking on unresponsive tabs
+    return withTimeoutFallback(sendPromise, 3000, null);
   }
 
   /**

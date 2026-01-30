@@ -46,19 +46,34 @@ export class Popup {
     }
 
     const popupRect = this.popup.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
 
+    // Calculate horizontal position
     let posX = elementRect.left;
-    if (posX + popupRect.width >= window.innerWidth) {
-      posX = window.innerWidth - popupRect.width;
+    if (posX + popupRect.width > viewportWidth) {
+      posX = viewportWidth - popupRect.width;
     }
-
-    let posY = elementRect.bottom + this.offset;
-    if (posY + popupRect.height >= window.innerHeight) {
-      posY = elementRect.top - popupRect.height - this.offset;
-    }
-
     posX = Math.max(0, posX);
-    posY = Math.max(0, posY);
+
+    // Calculate vertical position
+    const spaceBelow = viewportHeight - elementRect.bottom - this.offset;
+    const spaceAbove = elementRect.top - this.offset;
+
+    let posY: number;
+    if (spaceBelow >= popupRect.height) {
+      // Prefer below if there's enough space
+      posY = elementRect.bottom + this.offset;
+    } else if (spaceAbove >= popupRect.height) {
+      // Otherwise try above
+      posY = elementRect.top - popupRect.height - this.offset;
+    } else {
+      // Neither has enough space - center vertically and let it scroll
+      posY = Math.max(0, (viewportHeight - popupRect.height) / 2);
+    }
+
+    // Final bounds check to ensure popup stays in viewport
+    posY = Math.max(0, Math.min(posY, viewportHeight - popupRect.height));
 
     this.showAt({ x: posX, y: posY }, content);
   }

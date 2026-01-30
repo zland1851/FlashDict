@@ -2,6 +2,8 @@
  * Frontend API for communicating with the background service worker
  */
 
+import { showError } from './utils/toast.js';
+
 interface BackendRequest {
   action: string;
   params: Record<string, unknown>;
@@ -40,6 +42,7 @@ export async function getTranslation(expression: string): Promise<unknown> {
   try {
     return await sendtoBackend({ action: 'getTranslation', params: { expression } });
   } catch {
+    showError('Failed to get translation');
     return null;
   }
 }
@@ -49,8 +52,13 @@ export async function getTranslation(expression: string): Promise<unknown> {
  */
 export async function addNote(notedef: Record<string, unknown>): Promise<unknown> {
   try {
-    return await sendtoBackend({ action: 'addNote', params: { notedef } });
+    const result = await sendtoBackend({ action: 'addNote', params: { notedef } });
+    if (result === null) {
+      showError('Failed to add note to Anki');
+    }
+    return result;
   } catch {
+    showError('Failed to add note to Anki');
     return null;
   }
 }
@@ -60,8 +68,13 @@ export async function addNote(notedef: Record<string, unknown>): Promise<unknown
  */
 export async function playAudio(url: string): Promise<string | null> {
   try {
-    return await sendtoBackend<string>({ action: 'playAudio', params: { url } });
+    const result = await sendtoBackend<string>({ action: 'playAudio', params: { url } });
+    if (result === null) {
+      showError('Failed to play audio');
+    }
+    return result;
   } catch {
+    showError('Failed to play audio');
     return null;
   }
 }

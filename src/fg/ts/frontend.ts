@@ -7,6 +7,9 @@ import { rangeFromPoint, TextSourceRange } from './range.js';
 import { selectedText, isEmpty, getSentence, isValidElement } from './utils/text.js';
 import { isConnected, addNote, getTranslation, playAudio } from './api.js';
 import { sanitizeDictionaryHtml, escapeHtml } from './utils/sanitizer.js';
+import { LRUCache } from './utils/lru-cache.js';
+import { throttle } from './utils/throttle.js';
+import { showInfo } from './utils/toast.js';
 
 interface Point {
   x: number;
@@ -18,6 +21,7 @@ interface ExtensionOptions {
   mouseselection: boolean;
   hotkey: string;
   maxcontext: string;
+  maxwords: string;
   services: string;
   monolingual: string;
   [key: string]: unknown;
@@ -48,20 +52,29 @@ class ODHFront {
   private point: Point | null = null;
   private notes: NoteDefinition[] | null = null;
   private sentence: string = '';
-  private audio: Record<string, HTMLAudioElement> = {};
+  private audio: LRUCache<HTMLAudioElement>;
   private enabled: boolean = true;
   private mouseselection: boolean = true;
   private activateKey: number = 16; // shift 16, ctrl 17, alt 18
   private exitKey: number = 27; // esc 27
   private maxContext: number = 1;
+  private maxWords: number = 2;
   private popup: Popup = new Popup();
   private timeout: ReturnType<typeof setTimeout> | null = null;
   private mousemoved: boolean = false;
 
   constructor() {
-    window.addEventListener('mousemove', (e) => this.onMouseMove(e));
-    window.addEventListener('mousedown', (e) => this.onMouseDown(e));
-    window.addEventListener('dblclick', (e) => this.onDoubleClick(e));
+    // Initialize audio cache with eviction callback to clean up resources
+    this.audio = new LRUCache<HTMLAudioElement>(10, 0, (_key, audio) => {
+      audio.pause();
+      audio.src = '';
+    });
+
+    // Throttle mousemove to 50ms for performance
+    const throttledMouseMove = throttle((e: MouseEvent) => this.onMouseMove(e), 50);
+    window.addEventListener('mousemove', throttledMouseMove, { passive: true });
+    window.addEventListener('mousedown', (e) => this.onMouseDown(e), { passive: true });
+    window.addEventListener('dblclick', (e) => this.onDoubleClick(e), { passive: true });
     window.addEventListener('keydown', (e) => this.onKeyDown(e));
 
     chrome.runtime.onMessage.addListener(this.onBgMessage.bind(this));
@@ -107,6 +120,8 @@ class ODHFront {
   }
 
   private onMouseMove(e: MouseEvent): void {
+    if (!this.enabled) return;
+
     this.mousemoved = true;
     this.point = {
       x: e.clientX,
@@ -133,6 +148,15 @@ class ODHFront {
     this.timeout = null;
     const expression = selectedText();
     if (isEmpty(expression)) return;
+
+    // Skip if selection exceeds max words limit (0 means unlimited)
+    if (this.maxWords > 0) {
+      const wordCount = expression.trim().split(/\s+/).length;
+      if (wordCount > this.maxWords) {
+        showInfo(`Selection too long (max ${this.maxWords} words)`);
+        return;
+      }
+    }
 
     const result = await getTranslation(expression);
     if (result === null || (Array.isArray(result) && result.length === 0)) return;
@@ -172,6 +196,7 @@ class ODHFront {
     this.mouseselection = options.mouseselection;
     this.activateKey = Number(options.hotkey);
     this.maxContext = Number(options.maxcontext);
+    this.maxWords = Number(options.maxwords);
     // Note: options.services is handled by this.options reference
     callback?.();
   }
@@ -223,15 +248,15 @@ class ODHFront {
   private api_playSound(params: { sound: string }): void {
     const url = params.sound;
 
-    for (const key in this.audio) {
-      this.audio[key]?.pause();
+    // Get existing audio or create new one
+    let audio = this.audio.get(url);
+    if (!audio) {
+      audio = new Audio(url);
+      this.audio.set(url, audio);
     }
 
-    const audio = this.audio[url] || new Audio(url);
     audio.currentTime = 0;
     audio.play();
-
-    this.audio[url] = audio;
   }
 
   private buildNote(result: unknown): NoteDefinition[] {
