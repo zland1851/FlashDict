@@ -4,7 +4,14 @@
 
 import { Popup } from './popup.js';
 import { rangeFromPoint, TextSourceRange } from './range.js';
-import { selectedText, isEmpty, getSentence, isValidElement } from './utils/text.js';
+import {
+  selectedText,
+  isEmpty,
+  getSentence,
+  isValidElement,
+  matchesSourceLanguage,
+  parseDictSourceLanguage,
+} from './utils/text.js';
 import { isConnected, addNote, getTranslation, playAudio } from './api.js';
 import { sanitizeDictionaryHtml, escapeHtml } from './utils/sanitizer.js';
 import { LRUCache } from './utils/lru-cache.js';
@@ -148,6 +155,11 @@ class ODHFront {
     this.timeout = null;
     const expression = selectedText();
     if (isEmpty(expression)) return;
+
+    // Skip if text doesn't match the current dictionary's source language
+    const dictSelected = (this.options as Record<string, unknown>)?.dictSelected as string;
+    const sourceLang = parseDictSourceLanguage(dictSelected);
+    if (sourceLang && !matchesSourceLanguage(expression, sourceLang)) return;
 
     // Skip if selection exceeds max words limit (0 means unlimited)
     if (this.maxWords > 0) {

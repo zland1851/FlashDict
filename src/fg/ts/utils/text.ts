@@ -129,6 +129,49 @@ export function isInvalid(word: string): boolean {
 }
 
 /**
+ * Detect the writing script of a text string
+ * @param text - Text to analyze
+ * @returns Script category: 'cjk', 'cyrillic', 'latin', or 'unknown'
+ */
+export function detectTextScript(text: string): 'cjk' | 'cyrillic' | 'latin' | 'unknown' {
+  if (!text) return 'unknown';
+  if (/[\u4e00-\u9fa5]/.test(text)) return 'cjk';
+  if (/[\u0400-\u04FF]/.test(text)) return 'cyrillic';
+  if (/[a-zA-Z\u00C0-\u024F]/.test(text)) return 'latin';
+  return 'unknown';
+}
+
+const LATIN_LANGUAGES = new Set(['en', 'fr', 'es', 'de', 'it']);
+
+/**
+ * Check if selected text matches the dictionary's source language
+ * @param text - Selected text to check
+ * @param sourceLang - Source language code (e.g., 'en', 'cn', 'ru')
+ * @returns true if text script matches the source language
+ */
+export function matchesSourceLanguage(text: string, sourceLang: string): boolean {
+  const script = detectTextScript(text);
+  if (script === 'unknown') return true;
+  if (script === 'cjk') return sourceLang === 'cn';
+  if (script === 'cyrillic') return sourceLang === 'ru';
+  if (script === 'latin') return LATIN_LANGUAGES.has(sourceLang);
+  return true;
+}
+
+/**
+ * Extract source language code from a dictionary name
+ * e.g., 'encn_Cambridge' → 'en', 'builtin_encn_Collins' → 'en'
+ * @param dictName - Dictionary object name
+ * @returns Two-letter source language code, or null if not parseable
+ */
+export function parseDictSourceLanguage(dictName: string): string | null {
+  if (!dictName) return null;
+  const name = dictName.startsWith('builtin_') ? dictName.slice(8) : dictName;
+  const match = name.match(/^([a-z]{2})[a-z]{2}_/);
+  return match?.[1] ?? null;
+}
+
+/**
  * Extract and highlight a sentence containing the target word
  * @param word - Target word to highlight
  * @param offset - Offset position of word in text

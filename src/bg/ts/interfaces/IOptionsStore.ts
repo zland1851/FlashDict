@@ -19,6 +19,7 @@ export interface ExtensionOptions {
   // Dictionary options
   maxcontext: string;
   maxexample: string;
+  maxwords: string;
   monolingual: string;
   preferredaudio: string;
 
@@ -131,6 +132,7 @@ export const DEFAULT_OPTIONS: ExtensionOptions = {
   hotkey: '16',
   maxcontext: '1',
   maxexample: '2',
+  maxwords: '2',
   monolingual: '0',
   preferredaudio: '0',
   services: 'none',

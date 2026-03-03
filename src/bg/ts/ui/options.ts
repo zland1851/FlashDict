@@ -29,6 +29,7 @@ interface Options {
   preferredaudio: string;
   maxcontext: string;
   maxexample: string;
+  maxwords: string;
   services: string;
   id: string;
   password: string;
@@ -242,6 +243,7 @@ async function onSaveClicked(e: JQuery.ClickEvent): Promise<void> {
   options.preferredaudio = $('#anki-preferred-audio').val() as string;
   options.maxcontext = $('#maxcontext').val() as string;
   options.maxexample = $('#maxexample').val() as string;
+  options.maxwords = $('#maxwords').val() as string;
 
   options.services = $('#services').val() as string;
   options.id = $('#id').val() as string;
@@ -303,6 +305,7 @@ async function onReady(): Promise<void> {
   $('#anki-preferred-audio').val(options.preferredaudio);
   $('#maxcontext').val(options.maxcontext);
   $('#maxexample').val(options.maxexample);
+  $('#maxwords').val(options.maxwords);
 
   $('#services').val(options.services);
   $('#id').val(options.id);

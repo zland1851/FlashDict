@@ -20,6 +20,7 @@ export const validateExtensionOptions = createObjectValidator(
     hotkey: withDefault(isEnum(HOTKEY_VALUES), '16'),
     maxcontext: withDefault(isString, '1'),
     maxexample: withDefault(isString, '2'),
+    maxwords: withDefault(isString, '2'),
     monolingual: withDefault(isEnum(TOGGLE_VALUES), '0'),
     preferredaudio: withDefault(isString, '0'),
     services: withDefault(isEnum(SERVICES_VALUES), 'none'),

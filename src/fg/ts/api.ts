@@ -10,9 +10,23 @@ interface BackendRequest {
 }
 
 /**
+ * Check if the extension context is still valid (not uninstalled/invalidated)
+ */
+function isExtensionContextValid(): boolean {
+  try {
+    return !!chrome.runtime?.id;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Send a message to the backend service worker
  */
 export async function sendtoBackend<T>(request: BackendRequest): Promise<T | null> {
+  if (!isExtensionContextValid()) {
+    return null;
+  }
   return new Promise((resolve) => {
     chrome.runtime.sendMessage(request, (result: T) => {
       if (chrome.runtime.lastError) {
@@ -42,7 +56,9 @@ export async function getTranslation(expression: string): Promise<unknown> {
   try {
     return await sendtoBackend({ action: 'getTranslation', params: { expression } });
   } catch {
-    showError('Failed to get translation');
+    if (isExtensionContextValid()) {
+      showError('Failed to get translation');
+    }
     return null;
   }
 }
@@ -53,12 +69,14 @@ export async function getTranslation(expression: string): Promise<unknown> {
 export async function addNote(notedef: Record<string, unknown>): Promise<unknown> {
   try {
     const result = await sendtoBackend({ action: 'addNote', params: { notedef } });
-    if (result === null) {
+    if (result === null && isExtensionContextValid()) {
       showError('Failed to add note to Anki');
     }
     return result;
   } catch {
-    showError('Failed to add note to Anki');
+    if (isExtensionContextValid()) {
+      showError('Failed to add note to Anki');
+    }
     return null;
   }
 }
@@ -69,12 +87,14 @@ export async function addNote(notedef: Record<string, unknown>): Promise<unknown
 export async function playAudio(url: string): Promise<string | null> {
   try {
     const result = await sendtoBackend<string>({ action: 'playAudio', params: { url } });
-    if (result === null) {
+    if (result === null && isExtensionContextValid()) {
       showError('Failed to play audio');
     }
     return result;
   } catch {
-    showError('Failed to play audio');
+    if (isExtensionContextValid()) {
+      showError('Failed to play audio');
+    }
     return null;
   }
 }
