@@ -456,17 +456,24 @@ export function selectedText(): string {
 
 /**
  * Check if the active element is valid for text selection lookup
- * @returns true if active element is not an input or textarea
+ * @returns true if active element is not an input, textarea, or contenteditable
  */
 export function isValidElement(): boolean {
   if (typeof document === 'undefined') {
     return false;
   }
 
-  const invalidTags = ['INPUT', 'TEXTAREA'];
-  const nodeName = document.activeElement?.nodeName?.toUpperCase();
+  const el = document.activeElement;
+  if (!el) return false;
 
-  return !invalidTags.includes(nodeName || '');
+  const invalidTags = ['INPUT', 'TEXTAREA'];
+  const nodeName = el.nodeName?.toUpperCase();
+  if (invalidTags.includes(nodeName || '')) return false;
+
+  // Check if the element or any ancestor is contenteditable
+  if ((el as HTMLElement).isContentEditable) return false;
+
+  return true;
 }
 
 // Export type for sentence context
